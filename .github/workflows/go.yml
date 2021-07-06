@@ -2,6 +2,12 @@ name: Go
 
 on:
   push:
+    paths:
+      - '**.go'
+      - .github/workflows/go.yml
+      - Dockerfile
+      - go.mod
+      - go.sum
     branches: [ main ]
     
 env:
