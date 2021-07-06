@@ -1,4 +1,4 @@
-# Aiven Audit (Go)
+# Aiven Audit (Go) 📝🕵️
 Transfers project event logs from Aiven API to ArcSight
 
 
