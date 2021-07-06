@@ -1,4 +1,4 @@
-module github.com/nais/aiven-audit-go
+module github.com/nais/aiven-audit
 
 go 1.16
 
