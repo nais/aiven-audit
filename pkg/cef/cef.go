@@ -19,11 +19,36 @@ type CefRecord struct {
 	severity_id string
 	// Event timestamp
 	end int64
+	// NAV ident
+	suid string
 }
 
-func (record CefRecord) cefString() string {
+func NewCefRecord(
+	version int8,
+	device_vendor string,
+	device_product string,
+	device_version string,
+	type_id string,
+	message string,
+	severity_id string,
+	end int64,
+	suid string) CefRecord {
+	return CefRecord{
+		version,
+		device_vendor,
+		device_product,
+		device_version,
+		type_id,
+		message,
+		severity_id,
+		end,
+		suid,
+	}
+}
+
+func (record CefRecord) CefString() string {
 	return fmt.Sprintf(
-		"CEF:%v|%v|%v|%v|%v|%v|%v|end=%v",
+		"CEF:%v|%v|%v|%v|%v|%v|%v|end=%v suid=%v",
 		record.version,
 		record.device_vendor,
 		record.device_product,
@@ -31,5 +56,6 @@ func (record CefRecord) cefString() string {
 		record.type_id,
 		record.message,
 		record.severity_id,
-		record.end)
+		record.end,
+		record.suid)
 }
