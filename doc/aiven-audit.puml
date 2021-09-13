@@ -1,0 +1,30 @@
+@startuml
+participant "Aiven-Audit" #99FF99
+participant naudit
+database postgres
+participant "Aiven API" #red
+
+== Initialization ==
+"Aiven-Audit" -> postgres: Create the hash table if it does not exist
+
+== Logic ==
+
+group sync event log [ loop 10 sec]
+
+    group for each project [dev-gcp, prod-gcp]
+        "Aiven-Audit" -> "Aiven API": Get event log
+        "Aiven API" -> "Aiven-Audit": Project event log
+        "Aiven-Audit" -> "Aiven-Audit": create hash for batch
+         group for each event
+            "Aiven-Audit" -> "Aiven-Audit": hash event
+         end
+         "Aiven-Audit" -> postgres: start transaction
+         "Aiven-Audit" -> postgres: upsert event log record(event_hash, batch_hash)
+         "Aiven-Audit" -> postgres: select events with batch hash
+         postgres -> "Aiven-Audit": new event hashes
+         "Aiven-Audit" -> naudit: log events
+         "Aiven-Audit" -> postgres: commit transaction
+    end
+
+end
+@enduml

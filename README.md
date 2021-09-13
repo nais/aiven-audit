@@ -6,6 +6,8 @@ Transfers project event logs from Aiven API to ArcSight
 - [ ] Impl connect to db and upsert logs
 - [ ] Impl connect to ArcSight and sync logs
 
+## How Aiven Audit works
+![Sequence diagram](https://github.com/nais/aiven-audit/tree/main/doc/aiven-audit.puml)
 
 ## Sync loop
 0. Get latest row fro db and compare etag to HTTP GETed document.
