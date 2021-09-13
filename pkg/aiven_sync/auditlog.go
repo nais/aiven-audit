@@ -20,11 +20,11 @@ func NewAuditLog(addr, tag string) AuditLog {
 	}
 }
 
-func (al AuditLog) Log(events []*aiven.ProjectEvent) []*aiven.ProjectEvent {
+func (al AuditLog) Log(events []*aiven.ProjectEvent) ([]*aiven.ProjectEvent, error) {
 	auditer, err := syslog.Dial("tcp", al.addr,
 		syslog.LOG_INFO|syslog.LOG_DAEMON, al.tag)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer func(auditer *syslog.Writer) {
 		_ = auditer.Close()
@@ -33,10 +33,10 @@ func (al AuditLog) Log(events []*aiven.ProjectEvent) []*aiven.ProjectEvent {
 	for _, event := range events {
 		err = auditer.Info(eventToCef(event).CefString())
 		if err != nil {
-			log.Fatalf("error while audit logging: %v", err)
+			return nil, err
 		}
 	}
-	return events
+	return events, nil
 }
 
 func eventToCef(event *aiven.ProjectEvent) cef.CefRecord {
