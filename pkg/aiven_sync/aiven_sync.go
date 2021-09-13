@@ -8,16 +8,18 @@ import (
 )
 
 type AivenSync struct {
-	api   *aiven.ProjectsHandler
-	ses   *SyncedEventsStore
-	audit *AuditLog
+	api      *aiven.ProjectsHandler
+	ses      *SyncedEventsStore
+	audit    *AuditLog
+	projects []string
 }
 
-func NewAivenSync(api *aiven.ProjectsHandler, ses *SyncedEventsStore, audit *AuditLog) AivenSync {
+func NewAivenSync(api *aiven.ProjectsHandler, ses *SyncedEventsStore, audit *AuditLog, projects []string) AivenSync {
 	return AivenSync{
 		api,
 		ses,
 		audit,
+		projects,
 	}
 }
 
@@ -26,38 +28,65 @@ type EventProject interface {
 }
 
 func (as *AivenSync) Synchronize(project EventProject) {
-	eventLog, err := project.GetEventLog("nav-dev") // TODO make configurable
-	if err != nil {
-		log.Fatal("Error getting event logs %w", err)
+	for _, aivenProject := range as.projects {
+
+		log.Printf("processing logs for project = %v", aivenProject)
+		eventLog, err := project.GetEventLog(aivenProject)
+		if err != nil {
+			log.Fatal("Error getting event logs %w", err)
+		}
+
+		// create hashes of batch and individual events
+		eventLogBatchHash := batchHash(eventLog)
+		hashToEvent := hashMapOf(eventLog)
+
+		// upsert event hashes
+		var nrRecordsChanged int64
+		for hash, _ := range hashToEvent {
+
+			affected, err := as.ses.UpsertLogEvent(hash, eventLogBatchHash)
+			if err != nil {
+				log.Fatalf("error upserting logs: %v", err)
+			}
+			nrRecordsChanged += affected
+		}
+
+		if nrRecordsChanged == 0 {
+			log.Printf("Records changed after upserting batch = %v is 0, no new events, aborting sync for batch", eventLogBatchHash)
+			return
+		}
+
+		// get upnserted events with current batch hash
+		newEventHashes, err := as.ses.LogEventHashesForBatch(eventLogBatchHash)
+		if err != nil {
+			log.Fatal("Error querying events for batch: ", err)
+		}
+
+		// get the new, unique events
+		newEvents := filterNewEvents(newEventHashes, hashToEvent)
+
+		// log events to ArchSight
+		log.Printf("events to be logged to Archsight: %v\n", len(newEvents))
+		_, err = as.audit.Log(newEvents)
+		if err != nil {
+			log.Printf("Error while logging to naudit, rolling back upserts: %v", err)
+			as.ses.Rollback()
+		} else {
+			as.ses.Commit()
+		}
 	}
+}
 
-	// upsert received events
-	eventLogBatchHash := batchHash(eventLog)
+func hashMapOf(events []*aiven.ProjectEvent) map[string]*aiven.ProjectEvent {
 	hashToEvent := make(map[string]*aiven.ProjectEvent) // make mapping for filtering
-
-	var nrRecordsChanged int64
-	for _, event := range eventLog {
+	for _, event := range events {
 		hash := eventHash(event)
 		hashToEvent[string(hash)] = event // store for filtering later
-
-		affected, err := as.ses.UpsertLogEvent(hash, eventLogBatchHash)
-		if err != nil {
-			log.Fatalf("error upserting logs: %v", err)
-		}
-		nrRecordsChanged += affected
 	}
+	return hashToEvent
+}
 
-	if nrRecordsChanged == 0 {
-		log.Printf("Records changed after upserting batch = %v is 0, no new events, aborting sync for batch", eventLogBatchHash)
-		return
-	}
-
-	// fetch inserted events with batch hash
-	newEventHashes, err := as.ses.LogEventHashesForBatch(eventLogBatchHash)
-	if err != nil {
-		log.Fatal("Error querying events for batch: ", err)
-	}
-
+func filterNewEvents(newEventHashes []string, hashToEvent map[string]*aiven.ProjectEvent) []*aiven.ProjectEvent {
 	newEvents := make([]*aiven.ProjectEvent, 0)
 	for _, hash := range newEventHashes {
 		event := hashToEvent[hash]
@@ -65,10 +94,7 @@ func (as *AivenSync) Synchronize(project EventProject) {
 			newEvents = append(newEvents, event)
 		}
 	}
-
-	// push events to ArchSight
-	log.Printf("events to be logged to Archsight: %v\n", len(newEvents))
-	as.audit.Log(newEvents) // TODO handle error when logging to naudit
+	return newEvents
 }
 
 func eventHash(event *aiven.ProjectEvent) string {

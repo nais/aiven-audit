@@ -54,14 +54,16 @@ func run() error {
 	}()
 
 	config := config2.ConfigFromEnv()
-	log.Printf("Token: %v", config.AivenAPIToken)
 	apiClient, err := aiven.NewTokenClient(config.AivenAPIToken, "")
 	if err != nil {
 		log.Fatalf("Could not create Aiven Client - err: %s", err)
 	}
-	ses := eventsync.NewSyncedEventsStore("postgres://unicorn_user:magical_password@localhost:5432/rainbow_database")
+
+	ses := eventsync.NewSyncedEventsStore(config.DbHost)
+	ses.Init()
+
 	audit := eventsync.NewAuditLog(config.AuditLogAddr, "aiven-audit")
-	aivenSync := eventsync.NewAivenSync(apiClient.Projects, &ses, &audit)
+	aivenSync := eventsync.NewAivenSync(apiClient.Projects, &ses, &audit, config.Projects)
 
 	// Run log event syncer
 	go func() {
@@ -81,7 +83,7 @@ func syncLogEvents(ctx context.Context, client *aiven.Client, aivernSyncer *even
 		case <-ctx.Done():
 			return nil
 		case <-time.Tick(tick):
-			log.Println("Ticking along...")
+			//log.Println("Ticking along...")
 			aivernSyncer.Synchronize(client.Projects)
 			metrics.EventLogsSyncCounter.Inc()
 		}
