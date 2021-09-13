@@ -36,19 +36,6 @@ func (ses SyncedEventsStore) Close() {
 	}
 }
 
-func (ses SyncedEventsStore) UpsertLogEvent(eventHash, batchHash string) (int64, error) {
-	query := "INSERT INTO consumed_aiven_events (event_hash, batch_hash) " +
-		"VALUES($1, $2) " +
-		"ON CONFLICT (event_hash) " +
-		"DO NOTHING;"
-
-	result, err := ses.db.Exec(query, eventHash, batchHash)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected()
-}
-
 func (ses SyncedEventsStore) LogEventHashesForBatch(batchHash string) ([]string, error) {
 	rows, err := ses.db.Query(
 		"SELECT event_hash FROM consumed_aiven_events "+
@@ -67,4 +54,17 @@ func (ses SyncedEventsStore) LogEventHashesForBatch(batchHash string) ([]string,
 		eventHashesForBatch = append(eventHashesForBatch, eventHash)
 	}
 	return eventHashesForBatch, nil
+}
+
+func (ses SyncedEventsStore) UpsertLogEvent(eventHash, batchHash string) (int64, error) {
+	query := "INSERT INTO consumed_aiven_events (event_hash, batch_hash) " +
+		"VALUES($1, $2) " +
+		"ON CONFLICT (event_hash) " +
+		"DO NOTHING;"
+
+	result, err := ses.db.Exec(query, eventHash, batchHash)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
