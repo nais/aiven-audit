@@ -10,11 +10,8 @@ Transfers project event logs from Aiven API to ArcSight
 ![Sequence diagram](doc/aiven-audit.png)
 
 ## Sync loop
-0. Get latest row fro db and compare etag to HTTP GETed document.
-
-   if new etag
-
+0. hash batch
 1. Hash message
-2. upsert with hash as prim key, and with etag as column
-3. Fetch rows with etag in question
+2. upsert with hash as prim key, and with batch hash as column
+3. Fetch rows with batch in question
 4. Publish to Arcsight
