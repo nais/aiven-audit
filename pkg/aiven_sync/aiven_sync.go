@@ -26,7 +26,7 @@ type EventProject interface {
 }
 
 func (as *AivenSync) Synchronize(project EventProject) {
-	eventLog, err := project.GetEventLog("nav-dev")
+	eventLog, err := project.GetEventLog("nav-dev") // TODO make configurable
 	if err != nil {
 		log.Fatal("Error getting event logs %w", err)
 	}
@@ -67,7 +67,7 @@ func (as *AivenSync) Synchronize(project EventProject) {
 	}
 
 	// push events to ArchSight
-	log.Printf("events logged to Archsight: %v\n", len(newEvents))
+	log.Printf("events to be logged to Archsight: %v\n", len(newEvents))
 	as.audit.Log(newEvents) // TODO handle error when logging to naudit
 }
 
