@@ -18,12 +18,14 @@ group sync event log [ loop 10 sec]
          group for each event
             "Aiven-Audit" -> "Aiven-Audit": hash event
          end
-         "Aiven-Audit" -> postgres: start transaction
-         "Aiven-Audit" -> postgres: upsert event log record(event_hash, batch_hash)
-         "Aiven-Audit" -> postgres: select events with batch hash
-         postgres -> "Aiven-Audit": new event hashes
-         "Aiven-Audit" -> naudit: log events
-         "Aiven-Audit" -> postgres: commit transaction
+         group db transaction
+             "Aiven-Audit" -> postgres: start transaction
+             "Aiven-Audit" -> postgres: upsert event log record(event_hash, batch_hash)
+             "Aiven-Audit" -> postgres: select events with batch hash
+             postgres -> "Aiven-Audit": new event hashes
+             "Aiven-Audit" -> naudit: log events
+             "Aiven-Audit" -> postgres: commit transaction
+         end
     end
 
 end
