@@ -5,11 +5,11 @@ import (
 	"net/http"
 )
 
-func InitNaisHandlers() {
-	http.HandleFunc("/nais/isready", isReady)
-	http.HandleFunc("/nais/isalive", isReady)
+func Handlers(mux *http.ServeMux) {
+	mux.HandleFunc("/nais/isready", isReady)
+	mux.HandleFunc("/nais/isalive", isReady)
 }
 
-func isReady(w http.ResponseWriter, _ *http.Request) {
-	_, _ = fmt.Fprintf(w, "OK")
+func isReady(writer http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(writer, "OK")
 }

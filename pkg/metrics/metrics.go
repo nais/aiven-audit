@@ -13,6 +13,6 @@ var EventLogsSyncCounter = promauto.NewCounter(prometheus.CounterOpts{
 	Help: "The total number of synchronized event logs",
 })
 
-func SetupPrometheus() {
-	http.Handle("/metrics", promhttp.Handler())
+func Handlers(mux *http.ServeMux) {
+	mux.Handle("/metrics", promhttp.Handler())
 }

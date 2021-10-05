@@ -13,39 +13,24 @@ import (
 
 	"github.com/nais/aiven-audit/pkg/aivensync"
 	"github.com/nais/aiven-audit/pkg/config"
+	"github.com/nais/aiven-audit/pkg/metrics"
+	"github.com/nais/aiven-audit/pkg/nais"
 )
 
 const (
 	continuousSyncInterval = 10 * time.Second
 )
 
-func root(w http.ResponseWriter, _ *http.Request) {
-	_, err := fmt.Fprintf(w, "Aiven Audit")
-	if err != nil {
-		log.Fatal("Could not respond")
-	}
-}
-
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go httpd(ctx)
 	go syncEvents(ctx)
+	go httpd()
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
-	log.Infof("Received %s, shutting down...", <-interrupt)
-}
-
-func httpd(ctx context.Context) {
-	log.Info("Starting HTTP server")
-
-	// TODO
-
-	//http.HandleFunc("/", root)
-	//nais.InitNaisHandlers()   // Setup handling of nais paths
-	//metrics.SetupPrometheus() // Setup metrics path
+	log.Infof("Received %s, shutting down", <-interrupt)
 }
 
 func syncEvents(ctx context.Context) {
@@ -63,8 +48,49 @@ func syncEvents(ctx context.Context) {
 		case <-ticker.C:
 			err := sync.Synchronize()
 			if err != nil {
-				log.Errorf("synchronize: %s", err)
+				log.Errorf("Continuous sync: %s", err)
 			}
 		}
+	}
+}
+
+func httpd() {
+	log.Info("Starting HTTP server")
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(writer http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(writer, "Aiven audit log sync")
+	})
+
+	nais.Handlers(mux)
+	metrics.Handlers(mux)
+
+	srv := http.Server{
+		Addr:    ":8080",
+		Handler: mux,
+	}
+
+	defer shutdownHttpd(srv)
+
+	err := srv.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		log.Errorf("Serve HTTP: %v", err)
+	} else {
+		log.Info("HTTP server closed")
+	}
+}
+
+func shutdownHttpd(srv http.Server) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	err := srv.Shutdown(ctx)
+	if err != nil {
+		log.Errorf("Shutdown HTTP server: %v", err)
+	}
+
+	err = ctx.Err()
+	if err != nil {
+		log.Errorf("Shutdown HTTP server context error: %v", err)
 	}
 }
