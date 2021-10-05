@@ -1,13 +1,5 @@
 version: '3'
 services:
-  database:
-    image: "postgres" # use latest official postgres version
-    environment:
-      - POSTGRES_USER=unicorn_user
-      - POSTGRES_PASSWORD=magical_password
-      - POSTGRES_DB=rainbow_database
-    ports:
-    - 5432:5432
   audit.nais:
     image: balabit/syslog-ng:latest
     volumes:
