@@ -35,7 +35,7 @@ func (as *AivenSync) Synchronize() error {
 		}
 
 		// Events are ordered by
-		i := FindLastAckedEvent(events, as.lastAckedEvent[project.ProjectName])
+		i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName])
 		for ; i >= 0; i-- {
 			log.Infof("(%s): %+v", project, events[i])
 			/*			err := as.audit.Log(event)
@@ -51,7 +51,7 @@ func (as *AivenSync) Synchronize() error {
 	return nil
 }
 
-func FindLastAckedEvent(events []*AivenEvent, lastAckedEvent *AivenEvent) int {
+func FindStartIndex(events []*AivenEvent, lastAckedEvent *AivenEvent) int {
 	if lastAckedEvent == nil {
 		return len(events) - 1
 	}

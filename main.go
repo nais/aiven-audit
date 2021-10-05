@@ -43,7 +43,7 @@ func run() error {
 	// Always cancel child go routines
 	defer cancel()
 
-	cfg := config.ConfigFromEnv()
+	cfg := config.FromEnv()
 
 	audit := aivensync.NewAuditLog(cfg.AuditLogAddr, "aiven-audit")
 	aivenSync := aivensync.NewAivenSync(&audit, cfg.AivenAPIToken)

@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestFindLastAckedEvent(t *testing.T) {
+func TestFindStartIndex(t *testing.T) {
 	events := []*AivenEvent{
 		{Actor: "a", EventDesc: "a", EventType: "a", ServiceName: "a", Time: "a"},
 		{Actor: "b", EventDesc: "b", EventType: "b", ServiceName: "b", Time: "b"},
@@ -21,24 +21,24 @@ func TestFindLastAckedEvent(t *testing.T) {
 		want int
 	}{
 		{
-			name: "find a event",
-			want: 0,
+			name: "find where to start if a was last acked event",
+			want: -1,
 			args: args{
 				lastAckedEvent: &AivenEvent{Actor: "a", EventDesc: "a", EventType: "a", ServiceName: "a", Time: "a"},
 				events:         events,
 			},
 		},
 		{
-			name: "find b event",
-			want: 1,
+			name: "find where to start if b was last acked event",
+			want: 0,
 			args: args{
 				lastAckedEvent: &AivenEvent{Actor: "b", EventDesc: "b", EventType: "b", ServiceName: "b", Time: "b"},
 				events:         events,
 			},
 		},
 		{
-			name: "find c event",
-			want: 2,
+			name: "find where to start if c was last acked event",
+			want: 1,
 			args: args{
 				lastAckedEvent: &AivenEvent{Actor: "c", EventDesc: "c", EventType: "c", ServiceName: "c", Time: "c"},
 				events:         events,
@@ -47,8 +47,8 @@ func TestFindLastAckedEvent(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := FindLastAckedEvent(tt.args.events, tt.args.lastAckedEvent); got != tt.want {
-				t.Errorf("FindLastAckedEvent() = %v, want %v", got, tt.want)
+			if got := FindStartIndex(tt.args.events, tt.args.lastAckedEvent); got != tt.want {
+				t.Errorf("FindStartIndex() = %v, want %v", got, tt.want)
 			}
 		})
 	}

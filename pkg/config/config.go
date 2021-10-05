@@ -9,7 +9,7 @@ type AivenAuditConfig struct {
 	AuditLogAddr  string
 }
 
-func ConfigFromEnv() AivenAuditConfig {
+func FromEnv() AivenAuditConfig {
 	aivenPat := os.Getenv("AIVEN_AUDIT_PAT")
 	auditAddr := os.Getenv("AUDIT_LOG_ADDR")
 	return AivenAuditConfig{
