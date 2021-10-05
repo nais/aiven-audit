@@ -25,7 +25,7 @@ func TestFindLastAckedEvent(t *testing.T) {
 			want: 0,
 			args: args{
 				lastAckedEvent: &AivenEvent{Actor: "a", EventDesc: "a", EventType: "a", ServiceName: "a", Time: "a"},
-				events: events,
+				events:         events,
 			},
 		},
 		{
@@ -33,7 +33,7 @@ func TestFindLastAckedEvent(t *testing.T) {
 			want: 1,
 			args: args{
 				lastAckedEvent: &AivenEvent{Actor: "b", EventDesc: "b", EventType: "b", ServiceName: "b", Time: "b"},
-				events: events,
+				events:         events,
 			},
 		},
 		{
@@ -41,7 +41,7 @@ func TestFindLastAckedEvent(t *testing.T) {
 			want: 2,
 			args: args{
 				lastAckedEvent: &AivenEvent{Actor: "c", EventDesc: "c", EventType: "c", ServiceName: "c", Time: "c"},
-				events: events,
+				events:         events,
 			},
 		},
 	}

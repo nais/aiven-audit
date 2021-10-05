@@ -38,12 +38,12 @@ func (as *AivenSync) Synchronize() error {
 		i := FindLastAckedEvent(events, as.lastAckedEvent[project.ProjectName])
 		for ; i >= 0; i-- {
 			log.Infof("(%s): %+v", project, events[i])
-/*			err := as.audit.Log(event)
-			if err != nil {
-				log.Errorf("Failed to log event: %v, err: %s", event, err)
-				break
-			}
-*/
+			/*			err := as.audit.Log(event)
+						if err != nil {
+							log.Errorf("Failed to log event: %v, err: %s", event, err)
+							break
+						}
+			*/
 			as.lastAckedEvent[project.ProjectName] = events[i]
 		}
 	}
@@ -53,14 +53,14 @@ func (as *AivenSync) Synchronize() error {
 
 func FindLastAckedEvent(events []*AivenEvent, lastAckedEvent *AivenEvent) int {
 	if lastAckedEvent == nil {
-		return len(events)-1
+		return len(events) - 1
 	}
 
 	for i, event := range events {
 		if event.Equals(lastAckedEvent) {
-			return i-1
+			return i - 1
 		}
 	}
 
-	return len(events)-1
+	return len(events) - 1
 }
