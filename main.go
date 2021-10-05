@@ -15,6 +15,10 @@ import (
 	"github.com/nais/aiven-audit/pkg/config"
 )
 
+const (
+	continuousSyncInterval = 10 * time.Second
+)
+
 func root(w http.ResponseWriter, _ *http.Request) {
 	_, err := fmt.Fprintf(w, "Aiven Audit")
 	if err != nil {
@@ -23,63 +27,44 @@ func root(w http.ResponseWriter, _ *http.Request) {
 }
 
 func main() {
-	if err := run(); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
-	}
-}
-
-func run() error {
-	//http.HandleFunc("/", root)
-	log.Println("starting aiven-audit...")
-	//nais.InitNaisHandlers()   // Setup handling of nais paths
-	//metrics.SetupPrometheus() // Setup metrics path
-
-	programContext, cancel := context.WithCancel(context.Background())
-
-	// Handle common signals
-	handleCommonSignals(programContext, cancel)
-
-	// Always cancel child go routines
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	go httpd(ctx)
+	go syncEvents(ctx)
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
+	log.Infof("Received %s, shutting down...", <-interrupt)
+}
+
+func httpd(ctx context.Context) {
+	log.Info("Starting HTTP server")
+
+	// TODO
+
+	//http.HandleFunc("/", root)
+	//nais.InitNaisHandlers()   // Setup handling of nais paths
+	//metrics.SetupPrometheus() // Setup metrics path
+}
+
+func syncEvents(ctx context.Context) {
+	log.Infof("Starting continuous event sync, initial sync scheduled in %s", continuousSyncInterval)
 	cfg := config.FromEnv()
 
 	audit := aivensync.NewAuditLog(cfg.AuditLogAddr, "aiven-audit")
-	aivenSync := aivensync.NewAivenSync(&audit, cfg.AivenAPIToken)
-	synchronizeContinuously(programContext, aivenSync)
+	sync := aivensync.NewAivenSync(&audit, cfg.AivenAPIToken)
 
-	return nil
-	//return http.ListenAndServe(":8080", nil)
-}
-
-func synchronizeContinuously(ctx context.Context, s aivensync.AivenSync) {
-	log.Infof("Starting synchronizer, first sync scheduled in 10s")
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(continuousSyncInterval)
 	for {
 		select {
 		case <-ctx.Done():
-			log.Info("Program done, shutting down synchronizer")
 			return
 		case <-ticker.C:
-			err := s.Synchronize()
+			err := sync.Synchronize()
 			if err != nil {
 				log.Errorf("synchronize: %s", err)
 			}
 		}
 	}
-}
-
-func handleCommonSignals(programContext context.Context, cancel context.CancelFunc) {
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		select {
-		case <-signalChan:
-			log.Printf("aiven-audit got SIGINT/SIGTERM, exiting")
-			cancel()
-		case <-programContext.Done():
-			log.Printf("aiven-audit done")
-		}
-	}()
 }
