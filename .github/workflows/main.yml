@@ -5,6 +5,7 @@ on:
     paths:
       - '**.go'
       - .github/workflows/main.yml
+      - '.nais/*'
       - Dockerfile
       - go.mod
       - go.sum
