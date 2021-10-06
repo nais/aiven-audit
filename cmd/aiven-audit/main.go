@@ -22,6 +22,8 @@ const (
 )
 
 func main() {
+	log.SetFormatter(&log.JSONFormatter{})
+
 	err := run()
 	if err != nil {
 		log.Fatalf("fatal: %s", err)
