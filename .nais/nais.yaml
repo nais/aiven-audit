@@ -34,6 +34,8 @@ spec:
       cpu: 200m
       memory: 256Mi
   skipCaBundle: true
+  envFrom:
+    - secret: aiven-audit
 ---
 apiVersion: v1
 kind: Secret
