@@ -14,6 +14,7 @@ RUN go mod download
 COPY cmd/ cmd/
 COPY pkg/ pkg/
 
+RUN go test ./...
 RUN go build -o aiven-audit ./cmd/aiven-audit/
 
 FROM alpine:3.14
