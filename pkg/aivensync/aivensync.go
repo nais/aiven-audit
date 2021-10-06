@@ -38,17 +38,16 @@ func (as *AivenSync) Synchronize() error {
 			return fmt.Errorf("get project events: %w", err)
 		}
 
-		// Events are ordered by
-		i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName])
-		for ; i >= 0; i-- {
+		for i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName]) ; i >= 0; i-- {
 			log.Infof("(%s): %+v", project, events[i])
-			/*			err := as.audit.Log(event)
-						if err != nil {
-							as.metrics.EventLogsFailedSyncCounter.Inc()
-							log.Errorf("Failed to log event: %v, err: %s", event, err)
-							break
-						}
-			*/
+			err := as.audit.Log(events[i])
+
+			if err != nil {
+				as.metrics.EventLogsFailedSyncCounter.Inc()
+				log.Errorf("Failed to log event: %v, err: %s", events[i], err)
+				break
+			}
+
 			as.metrics.EventLogsSyncCounter.Inc()
 			as.lastAckedEvent[project.ProjectName] = events[i]
 		}
