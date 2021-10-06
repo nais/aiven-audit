@@ -31,16 +31,18 @@ func main() {
 		cancel()
 	}()
 
-	go syncEvents(programContext)
-	httpd(programContext)
-}
-
-func syncEvents(ctx context.Context) {
-	log.Infof("Starting continuous event sync, initial sync scheduled in %s", continuousSyncInterval)
+	m := metrics.SetupMetrics()
 	cfg := config.FromEnv()
 
 	audit := aivensync.NewAuditLog(cfg.AuditLogAddr, "aiven-audit")
-	sync := aivensync.NewAivenSync(&audit, cfg.AivenAPIToken)
+	aivenSync := aivensync.NewAivenSync(&audit, cfg.AivenAPIToken, m)
+
+	go syncEvents(programContext, aivenSync)
+	httpd(programContext)
+}
+
+func syncEvents(ctx context.Context, aivenSync aivensync.AivenSync) {
+	log.Infof("Starting continuous event sync, initial sync scheduled in %s", continuousSyncInterval)
 
 	ticker := time.NewTicker(continuousSyncInterval)
 	for {
@@ -48,7 +50,7 @@ func syncEvents(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			err := sync.Synchronize()
+			err := aivenSync.Synchronize()
 			if err != nil {
 				log.Errorf("Continuous sync: %s", err)
 			}

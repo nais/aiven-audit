@@ -4,19 +4,23 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/nais/aiven-audit/pkg/metrics"
 )
 
 type AivenSync struct {
 	audit          *AuditLog
 	lastAckedEvent map[string]*AivenEvent
 	client         AivenClient
+	metrics        *metrics.Metrics
 }
 
-func NewAivenSync(audit *AuditLog, aivenToken string) AivenSync {
+func NewAivenSync(audit *AuditLog, aivenToken string, m *metrics.Metrics) AivenSync {
 	return AivenSync{
 		audit:          audit,
 		lastAckedEvent: make(map[string]*AivenEvent),
 		client:         NewAivenClient(aivenToken),
+		metrics:        m,
 	}
 }
 
@@ -37,6 +41,7 @@ func (as *AivenSync) Synchronize() error {
 		// Events are ordered by
 		i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName])
 		for ; i >= 0; i-- {
+			as.metrics.EventLogsSyncCounter.Inc()
 			log.Infof("(%s): %+v", project, events[i])
 			/*			err := as.audit.Log(event)
 						if err != nil {
