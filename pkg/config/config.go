@@ -13,7 +13,7 @@ func FromEnv() AivenAuditConfig {
 	aivenPat := os.Getenv("AIVEN_AUDIT_PAT")
 	auditAddr := os.Getenv("AUDIT_LOG_ADDR")
 	if auditAddr == "" {
-		auditAddr = "audit.nais"
+		auditAddr = "audit.nais:6514"
 	}
 
 	return AivenAuditConfig{
