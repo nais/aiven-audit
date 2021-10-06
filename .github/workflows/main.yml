@@ -22,9 +22,22 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
 
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Test
+        run: go test -v ./...
+
   docker:
     name: Build and push Docker image
-    needs: [check]
+    needs: [check, test]
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
