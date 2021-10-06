@@ -13,7 +13,7 @@ func TestNew(t *testing.T) {
 	cfg, err := config.New()
 	assert.NoError(t, err)
 	assert.Equal(t, &config.AivenAuditConfig{
-		AivenAPIToken:   "",
+		AivenAPIToken: "",
 	}, cfg)
 }
 
@@ -22,6 +22,6 @@ func TestConfigVariable(t *testing.T) {
 	cfg, err := config.New()
 	assert.NoError(t, err)
 	assert.Equal(t, &config.AivenAuditConfig{
-		AivenAPIToken:   "audit pat",
+		AivenAPIToken: "audit pat",
 	}, cfg)
 }

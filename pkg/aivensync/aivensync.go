@@ -36,8 +36,14 @@ func (as *AivenSync) Synchronize() error {
 			return fmt.Errorf("get project events: %w", err)
 		}
 
-		for i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName]) ; i >= 0; i-- {
-			log.Infof("(%s): %+v", project, events[i])
+		for i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName]); i >= 0; i-- {
+			log.WithFields(log.Fields{
+				"AivenAudit_Actor":       events[i].Actor,
+				"AivenAudit_EventType":   events[i].EventType,
+				"AivenAudit_ServiceName": events[i].ServiceName,
+				"AivenAudit_Time":        events[i].Time,
+			}).Info(events[i].EventDesc)
+			as.lastAckedEvent[project.ProjectName] = events[i]
 		}
 	}
 

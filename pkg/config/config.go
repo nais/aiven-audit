@@ -6,11 +6,11 @@ import (
 )
 
 type AivenAuditConfig struct {
-	AivenAPIToken   string `json:"aivenAPIToken"`
+	AivenAPIToken string `json:"aivenAPIToken"`
 }
 
 const (
-	AivenAPIToken   = "aivenAPIToken"
+	AivenAPIToken = "aivenAPIToken"
 )
 
 func New() (*AivenAuditConfig, error) {

@@ -9,7 +9,7 @@ import (
 )
 
 type Metrics struct {
-	EventLogsSyncCounter       prometheus.Counter
+	EventLogsSyncCounter prometheus.Counter
 }
 
 func SetupMetrics() *Metrics {
