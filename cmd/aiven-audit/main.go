@@ -22,6 +22,14 @@ const (
 )
 
 func main() {
+	err := run()
+	if err != nil {
+		log.Fatalf("fatal: %s", err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	programContext, cancel := context.WithCancel(context.Background())
 
 	go func() {
@@ -32,13 +40,17 @@ func main() {
 	}()
 
 	m := metrics.SetupMetrics()
-	cfg := config.FromEnv()
+	cfg, err := config.New()
+	if err != nil {
+		return err
+	}
 
-	audit := aivensync.NewAuditLog(cfg.AuditLogAddr, "aiven-audit")
+	audit := aivensync.NewAuditLog(cfg.AuditLogAddress, "aiven-audit")
 	aivenSync := aivensync.NewAivenSync(&audit, cfg.AivenAPIToken, m)
 
 	go syncEvents(programContext, aivenSync)
-	httpd(programContext)
+
+	return httpd(programContext)
 }
 
 func syncEvents(ctx context.Context, aivenSync aivensync.AivenSync) {
@@ -58,7 +70,7 @@ func syncEvents(ctx context.Context, aivenSync aivensync.AivenSync) {
 	}
 }
 
-func httpd(ctx context.Context) {
+func httpd(ctx context.Context) error {
 	log.Info("Starting HTTP server")
 
 	mux := http.NewServeMux()
@@ -87,8 +99,10 @@ func httpd(ctx context.Context) {
 
 	err := srv.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
-		log.Errorf("Serve HTTP: %v", err)
+		return fmt.Errorf("Serve HTTP: %v", err)
 	} else {
 		log.Info("HTTP server closed")
 	}
+
+	return nil
 }
