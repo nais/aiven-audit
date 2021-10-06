@@ -22,15 +22,17 @@ const (
 )
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	programContext, cancel := context.WithCancel(context.Background())
 
-	go syncEvents(ctx)
-	go httpd()
+	go func() {
+		interrupt := make(chan os.Signal, 1)
+		signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
+		log.Infof("Received %s, shutting down", <-interrupt)
+		cancel()
+	}()
 
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
-	log.Infof("Received %s, shutting down", <-interrupt)
+	go syncEvents(programContext)
+	httpd(programContext)
 }
 
 func syncEvents(ctx context.Context) {
@@ -54,43 +56,37 @@ func syncEvents(ctx context.Context) {
 	}
 }
 
-func httpd() {
+func httpd(ctx context.Context) {
 	log.Info("Starting HTTP server")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(writer http.ResponseWriter, _ *http.Request) {
-		fmt.Fprint(writer, "Aiven audit log sync")
+		_, _ = fmt.Fprint(writer, "Aiven audit log sync")
 	})
 
 	nais.Handlers(mux)
 	metrics.Handlers(mux)
 
-	srv := http.Server{
+	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: mux,
 	}
 
-	defer shutdownHttpd(srv)
+	go func() {
+		<-ctx.Done()
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cancel()
+
+		err := srv.Shutdown(ctx)
+		if err != nil {
+			log.Errorf("Shutdown HTTP server: %v", err)
+		}
+	}()
 
 	err := srv.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		log.Errorf("Serve HTTP: %v", err)
 	} else {
 		log.Info("HTTP server closed")
-	}
-}
-
-func shutdownHttpd(srv http.Server) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	err := srv.Shutdown(ctx)
-	if err != nil {
-		log.Errorf("Shutdown HTTP server: %v", err)
-	}
-
-	err = ctx.Err()
-	if err != nil {
-		log.Errorf("Shutdown HTTP server context error: %v", err)
 	}
 }
