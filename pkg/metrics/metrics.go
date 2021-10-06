@@ -1,17 +1,35 @@
 package metrics
 
 import (
+	"net/http"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"net/http"
 )
 
-var EventLogsSyncCounter = promauto.NewCounter(prometheus.CounterOpts{
-	Name: "aivenaudit_event_logs_synced_total",
-	Help: "The total number of synchronized event logs",
-})
+type Metrics struct {
+	EventLogsSyncCounter       prometheus.Counter
+	EventLogsFailedSyncCounter prometheus.Counter
+}
 
-func SetupPrometheus() {
-	http.Handle("/metrics", promhttp.Handler())
+func SetupMetrics() *Metrics {
+	m := &Metrics{
+		EventLogsSyncCounter: promauto.NewCounter(prometheus.CounterOpts{
+			Namespace: "aivenaudit",
+			Name:      "event_logs_synced_total",
+			Help:      "The total number of synchronized event logs",
+		}),
+		EventLogsFailedSyncCounter: promauto.NewCounter(prometheus.CounterOpts{
+			Namespace: "aivenaudit",
+			Name:      "event_logs_failed_synced_total",
+			Help:      "The total number of failed synchronized event logs",
+		}),
+	}
+
+	return m
+}
+
+func Handlers(mux *http.ServeMux) {
+	mux.Handle("/metrics", promhttp.Handler())
 }

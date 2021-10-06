@@ -1,11 +1,11 @@
-package aiven_sync
+package aivensync
 
 import (
-	"github.com/aiven/aiven-go-client"
-	"github.com/nais/aiven-audit/pkg/cef"
 	"log"
 	"log/syslog"
 	"time"
+
+	"github.com/nais/aiven-audit/pkg/cef"
 )
 
 type AuditLog struct {
@@ -20,26 +20,27 @@ func NewAuditLog(addr, tag string) AuditLog {
 	}
 }
 
-func (al AuditLog) Log(events []*aiven.ProjectEvent) ([]*aiven.ProjectEvent, error) {
+func (al AuditLog) Log(event *AivenEvent) error {
 	auditer, err := syslog.Dial("tcp", al.addr,
 		syslog.LOG_INFO|syslog.LOG_DAEMON, al.tag)
+
 	if err != nil {
-		return nil, err
+		return err
 	}
+
 	defer func(auditer *syslog.Writer) {
 		_ = auditer.Close()
 	}(auditer)
 
-	for _, event := range events {
-		err = auditer.Info(eventToCef(event).CefString())
-		if err != nil {
-			return nil, err
-		}
+	err = auditer.Info(eventToCef(event).CefString())
+	if err != nil {
+		return err
 	}
-	return events, nil
+
+	return nil
 }
 
-func eventToCef(event *aiven.ProjectEvent) cef.CefRecord {
+func eventToCef(event *AivenEvent) cef.CefRecord {
 	eventTime, err := time.Parse(time.RFC3339, event.Time)
 	if err != nil {
 		log.Fatalf("Failed to parse event time: %v", err)
