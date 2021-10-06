@@ -45,8 +45,7 @@ func run() error {
 		return err
 	}
 
-	audit := aivensync.NewAuditLog(cfg.AuditLogAddress, "aiven-audit")
-	aivenSync := aivensync.NewAivenSync(&audit, cfg.AivenAPIToken, m)
+	aivenSync := aivensync.NewAivenSync(cfg.AivenAPIToken, m)
 
 	go syncEvents(programContext, aivenSync)
 

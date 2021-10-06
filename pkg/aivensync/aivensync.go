@@ -9,15 +9,13 @@ import (
 )
 
 type AivenSync struct {
-	audit          *AuditLog
 	lastAckedEvent map[string]*AivenEvent
 	client         AivenClient
 	metrics        *metrics.Metrics
 }
 
-func NewAivenSync(audit *AuditLog, aivenToken string, m *metrics.Metrics) AivenSync {
+func NewAivenSync(aivenToken string, m *metrics.Metrics) AivenSync {
 	return AivenSync{
-		audit:          audit,
 		lastAckedEvent: make(map[string]*AivenEvent),
 		client:         NewAivenClient(aivenToken),
 		metrics:        m,
@@ -40,16 +38,6 @@ func (as *AivenSync) Synchronize() error {
 
 		for i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName]) ; i >= 0; i-- {
 			log.Infof("(%s): %+v", project, events[i])
-			err := as.audit.Log(events[i])
-
-			if err != nil {
-				as.metrics.EventLogsFailedSyncCounter.Inc()
-				log.Errorf("Failed to log event: %v, err: %s", events[i], err)
-				break
-			}
-
-			as.metrics.EventLogsSyncCounter.Inc()
-			as.lastAckedEvent[project.ProjectName] = events[i]
 		}
 	}
 
