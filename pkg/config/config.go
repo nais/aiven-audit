@@ -15,7 +15,11 @@ const (
 
 func New() (*AivenAuditConfig, error) {
 	viper.SetDefault(AivenAPIToken, "")
-	viper.BindEnv(AivenAPIToken, "AIVEN_AUDIT_PAT")
+	err := viper.BindEnv(AivenAPIToken, "AIVEN_AUDIT_PAT")
+
+	if err != nil {
+		return nil, err
+	}
 
 	cfg := &AivenAuditConfig{}
 
@@ -24,7 +28,7 @@ func New() (*AivenAuditConfig, error) {
 		dc.ErrorUnused = true
 	}
 
-	err := viper.Unmarshal(cfg, decoderHook)
+	err = viper.Unmarshal(cfg, decoderHook)
 	if err != nil {
 		return nil, err
 	}
