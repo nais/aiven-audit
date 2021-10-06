@@ -1,0 +1,36 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  labels:
+    team: aura
+  name: aiven-audit
+  namespace: aura
+spec:
+  accessPolicy:
+    outbound:
+      external:
+        - host: api.aiven.io
+        - host: audit.nais
+  image: {{ image }}
+  liveness:
+    failureThreshold: 3
+    path: /nais/isalive
+    periodSeconds: 10
+    timeout: 1
+  readiness:
+    path: /nais/isready
+  port: 8080
+  prometheus:
+    enabled: true
+    path: /metrics
+  replicas:
+    max: 1
+    min: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  skipCaBundle: true
