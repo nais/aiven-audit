@@ -10,6 +10,7 @@ import (
 
 type Metrics struct {
 	EventLogsSyncCounter prometheus.Counter
+	EventLogsFailedSyncCounter prometheus.Counter
 }
 
 func SetupMetrics() *Metrics {
@@ -18,9 +19,14 @@ func SetupMetrics() *Metrics {
 			Name: "aivenaudit_event_logs_synced_total",
 			Help: "The total number of synchronized event logs",
 		}),
+		EventLogsFailedSyncCounter: promauto.NewCounter(prometheus.CounterOpts{
+			Name: "aivenaudit_event_logs_failed_synced_total",
+			Help: "The total number of failed synchronized event logs",
+		}),
 	}
 
 	prometheus.MustRegister(m.EventLogsSyncCounter)
+	prometheus.MustRegister(m.EventLogsFailedSyncCounter)
 
 	return m
 }
