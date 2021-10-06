@@ -71,4 +71,4 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: .nais/nais.yaml
-          IMAGE: ${{ env.docker_image }}
+          VAR: image="${{ env.docker_image }}",aiven_audit_pat="${{ secrets.AIVEN_AUDIT_PAT }}"

@@ -5,4 +5,4 @@ format:
 	gofmt -w .
 
 build:
-	go build -o ./bin/aiven-audit ./cmd/aiven-audit/main.go
+	go build -o ./bin/aiven-audit ./cmd/aiven-audit/

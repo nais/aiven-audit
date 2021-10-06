@@ -34,3 +34,14 @@ spec:
       cpu: 200m
       memory: 256Mi
   skipCaBundle: true
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app: aiven-audit
+  name: aiven-audit
+  namespace: aura
+type: Opaque
+stringData:
+  AIVEN_AUDIT_PAT: {{ aiven_audit_pat }}
