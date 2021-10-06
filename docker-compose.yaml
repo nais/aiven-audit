@@ -1,8 +1,0 @@
-version: '3'
-services:
-  audit.nais:
-    image: balabit/syslog-ng:latest
-    volumes:
-      - ${PWD}/audit-test.conf:/etc/syslog-ng/syslog-ng.conf
-    ports:
-      - 6514:6514
