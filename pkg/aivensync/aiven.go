@@ -3,6 +3,7 @@ package aivensync
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 )
@@ -57,11 +58,20 @@ type aivenClient struct {
 	client *http.Client
 }
 
+func closeResponseBody(body io.ReadCloser) {
+	err := body.Close()
+	if err != nil {
+		log.Warnf("Unable to close response body: %s", err)
+	}
+}
+
 func (a *aivenClient) GetProjects() ([]*AivenProject, error) {
 	response, err := a.client.Get("https://api.aiven.io/v1/project")
 	if err != nil {
 		return nil, err
 	}
+
+	defer closeResponseBody(response.Body)
 
 	err = checkForHttpError(response)
 	if err != nil {
@@ -82,6 +92,8 @@ func (a *aivenClient) GetProjectEvents(project string) ([]*AivenEvent, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	defer closeResponseBody(response.Body)
 
 	err = checkForHttpError(response)
 	if err != nil {
