@@ -10,7 +10,6 @@ spec:
     outbound:
       external:
         - host: api.aiven.io
-        - host: audit.nais
   image: {{ image }}
   liveness:
     failureThreshold: 3
@@ -28,11 +27,11 @@ spec:
     min: 1
   resources:
     limits:
-      cpu: 500m
-      memory: 1024Mi
-    requests:
       cpu: 200m
-      memory: 512Mi
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 64Mi
   skipCaBundle: true
   envFrom:
     - secret: aiven-audit
