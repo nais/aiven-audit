@@ -44,6 +44,7 @@ func (as *AivenSync) Synchronize() error {
 				"AivenAudit_Time":        events[i].Time,
 			}).Info(events[i].EventDesc)
 			as.lastAckedEvent[project.ProjectName] = events[i]
+			as.metrics.EventLogsSyncCounter.Inc()
 		}
 	}
 
