@@ -32,6 +32,9 @@ jobs:
   docker:
     needs: [check, test]
     runs-on: ubuntu-20.04
+    permissions:
+      contents: "read"
+      id-token: "write"
     steps:
       - uses: nais/platform-build-push-sign@a31c0ad7e31ff154df50baa9c3a5d33b310e8209 # ratchet:nais/platform-build-push-sign@main
         id: build-push-sign
