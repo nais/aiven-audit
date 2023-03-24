@@ -9,62 +9,44 @@ on:
       - Dockerfile
       - go.mod
       - go.sum
-    branches: [ main ]
-
+    branches: [main]
 env:
-  docker_image: ghcr.io/nais/aiven-audit:${{ github.sha }}
-
+  docker_image: europe-north1-docker.pkg.dev/nais-io/nais/images/aiven-audit:${{ github.sha }}
 jobs:
   check:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # ratchet:actions/checkout@v2
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
-
+        uses: golangci/golangci-lint-action@5c56cd6c9dc07901af25baab6f2b0d9f3b7c3018 # ratchet:golangci/golangci-lint-action@v2
   test:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # ratchet:actions/checkout@v2
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # ratchet:actions/setup-go@v2
         with:
           go-version: 1.17
-
       - name: Test
         run: go test -v ./...
-
   docker:
-    name: Build and push Docker image
     needs: [check, test]
-    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Build
-        run: |
-          docker image build --tag ${docker_image} .
-
-      - uses: docker/login-action@v1
+      - uses: nais/build-push-sign@a31c0ad7e31ff154df50baa9c3a5d33b310e8209 # ratchet:nais/build-push-sign@main
+        id: build-push-sign
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push image
-        run: docker push ${docker_image}
-
+          name: aiven-audit
+          google_service_account: gh-aiven-audit
+          workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
+          push: ${{ github.actor != 'dependabot[bot]' }}
   deploy:
     name: Deploy to prod-gcp
     needs: [docker]
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # ratchet:actions/checkout@v2
       - name: deploy to prod
-        uses: nais/deploy/actions/deploy@v1
+        uses: nais/deploy/actions/deploy@e1d100f14637a6caa0aec40f5b5c7fd0c3ce500e # ratchet:nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
