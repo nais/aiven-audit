@@ -36,6 +36,7 @@ jobs:
       contents: "read"
       id-token: "write"
     steps:
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # ratchet:actions/checkout@v2
       - uses: nais/platform-build-push-sign@a31c0ad7e31ff154df50baa9c3a5d33b310e8209 # ratchet:nais/platform-build-push-sign@main
         id: build-push-sign
         with:
