@@ -40,7 +40,7 @@ jobs:
       id-token: "write"
     steps:
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # ratchet:actions/checkout@v2
-      - uses: nais/platform-build-push-sign@a31c0ad7e31ff154df50baa9c3a5d33b310e8209 # ratchet:nais/platform-build-push-sign@main
+      - uses: nais/platform-build-push-sign@main # ratchet:nais/platform-build-push-sign@main
         id: build-push-sign
         with:
           name: aiven-audit
