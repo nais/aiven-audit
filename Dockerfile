@@ -16,7 +16,7 @@ COPY pkg/ pkg/
 
 RUN go build -o aiven-audit ./cmd/aiven-audit/
 
-FROM alpine:3.14
+FROM alpine:3.17
 
 WORKDIR /app
 
