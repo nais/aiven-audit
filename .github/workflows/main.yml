@@ -9,7 +9,6 @@ on:
       - Dockerfile
       - go.mod
       - go.sum
-    branches: [main]
 env:
   REGISTRY: europe-north1-docker.pkg.dev/nais-io/nais/images
   IMAGE_NAME: aiven-audit
@@ -49,6 +48,7 @@ jobs:
       version: "${{ steps.build-push-sign.outputs.version }}"
   deploy:
     name: Deploy to prod-gcp
+    if: github.ref == 'refs/heads/main'
     needs: [docker]
     runs-on: ubuntu-20.04
     steps:
