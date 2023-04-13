@@ -19,13 +19,13 @@ jobs:
   check:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # ratchet:actions/checkout@v2
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # ratchet:actions/checkout@v2
       - name: golangci-lint
         uses: golangci/golangci-lint-action@08e2f20817b15149a52b5b3ebe7de50aff2ba8c5 # ratchet:golangci/golangci-lint-action@v2
   test:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # ratchet:actions/checkout@v2
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # ratchet:actions/checkout@v2
       - name: Set up Go
         uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # ratchet:actions/setup-go@v2
         with:
@@ -39,7 +39,7 @@ jobs:
       contents: "read"
       id-token: "write"
     steps:
-      - uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # ratchet:actions/checkout@v2
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # ratchet:actions/checkout@v2
       - uses: nais/platform-build-push-sign@main # ratchet:nais/platform-build-push-sign@main
         id: build-push-sign
         with:
@@ -55,7 +55,7 @@ jobs:
     needs: [docker]
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # ratchet:actions/checkout@v2
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # ratchet:actions/checkout@v2
       - name: deploy to prod
         uses: nais/deploy/actions/deploy@e1d100f14637a6caa0aec40f5b5c7fd0c3ce500e # ratchet:nais/deploy/actions/deploy@v1
         env:
