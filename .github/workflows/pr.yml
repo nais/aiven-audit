@@ -1,0 +1,14 @@
+name: Build and deploy
+
+on:
+  pull_request:
+    types: [ opened, reopened, edited ]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # ratchet:actions/checkout@v2
+      - run: docker build -t aiven-audit-test .
