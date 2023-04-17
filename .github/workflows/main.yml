@@ -32,9 +32,9 @@ jobs:
         with:
           cosign-release: 'v2.0.0'
       - name: Verify builder image
-        run: cosign verify --certificate-identity "{{ env.BASEIMG_ID }}" --certificate-oidc-issuer "${{ env.BASEIMG_ISSUER }}" ${{ env.BUILDER_IMG }}
+        run: cosign verify --certificate-identity {{ env.BASEIMG_ID }} --certificate-oidc-issuer ${{ env.BASEIMG_ISSUER }} ${{ env.BUILDER_IMG }}
       - name: Verify runner image
-        run: cosign verify --certificate-identity "{{ env.BASEIMG_ID }}" --certificate-oidc-issuer "${{ env.BASEIMG_ISSUER }}" ${{ env.RUNNER_IMG }}
+        run: cosign verify --certificate-identity {{ env.BASEIMG_ID }} --certificate-oidc-issuer ${{ env.BASEIMG_ISSUER }} ${{ env.RUNNER_IMG }}
       - uses: nais/platform-build-push-sign@8b336817c5749f179373fd63a7f511bae7246f10 # ratchet:nais/build-push-sign@main
         id: build_push_sign
         with:
