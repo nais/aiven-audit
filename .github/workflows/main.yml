@@ -1,65 +1,61 @@
-name: Go
+name: Build and deploy
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
 on:
   workflow_dispatch:
   push:
-    paths:
-      - '**.go'
-      - .github/workflows/main.yml
-      - '.nais/*'
-      - Dockerfile
-      - go.mod
-      - go.sum
+    branches:
+      - main
+    paths-ignore:
+      - "*.md"
+
 env:
-  REGISTRY: europe-north1-docker.pkg.dev/nais-io/nais/images
-  IMAGE_NAME: aiven-audit
+  BUILDER_IMG: "cgr.dev/chainguard/go:1.20"
+  RUNNER_IMG: "cgr.dev/chainguard/static"
+  BASEIMG_ID: "https://github.com/chainguard-images/images/.github/workflows/release.yaml@refs/heads/main"
+  BASEIMG_ISSUER: "https://token.actions.githubusercontent.com"
+
 jobs:
-  check:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # ratchet:actions/checkout@v2
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@08e2f20817b15149a52b5b3ebe7de50aff2ba8c5 # ratchet:golangci/golangci-lint-action@v2
-  test:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # ratchet:actions/checkout@v2
-      - name: Set up Go
-        uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # ratchet:actions/setup-go@v2
-        with:
-          go-version: 1.17
-      - name: Test
-        run: go test -v ./...
-  docker:
-    needs: [check, test]
+  build_push_sign:
     runs-on: ubuntu-20.04
     permissions:
-      contents: "read"
-      id-token: "write"
+      contents: read
+      id-token: write
+    outputs:
+      tag: "${{ steps.build_push_sign.outputs.tag }}"
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # ratchet:actions/checkout@v2
-      - uses: nais/platform-build-push-sign@main # ratchet:nais/platform-build-push-sign@main
-        id: build-push-sign
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # ratchet:actions/checkout@v2
+      - name: Install cosign
+        uses: sigstore/cosign-installer@66dd3f388647c8d36a2b8b27371cce115a10e003 # ratchet:sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v2.0.0'
+      - name: Verify builder image
+        run: cosign verify --certificate-identity "{{ BASEIMG_ID }} --certificate-oidc-issuer ${{ BASEIMG_ISSUER }} ${{ BUILDER_IMG }}
+      - name: Verify runner image
+        run: cosign verify --certificate-identity "{{ BASEIMG_ID }} --certificate-oidc-issuer ${{ BASEIMG_ISSUER }} ${{ RUNNER_IMG }}
+      - uses: nais/build-push-sign@8b336817c5749f179373fd63a7f511bae7246f10 # ratchet:nais/build-push-sign@main
+        id: build_push_sign
         with:
           name: aiven-audit
+          dockerfile: Dockerfile
           google_service_account: gh-aiven-audit
+          push: true
           workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
-          push: ${{ github.actor != 'dependabot[bot]' && github.ref == 'refs/heads/main' }}
-    outputs:
-      version: "${{ steps.build-push-sign.outputs.version }}"
+
   deploy:
     name: Deploy to prod-gcp
     if: github.ref == 'refs/heads/main'
-    needs: [docker]
+    needs: [build_push_sign]
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # ratchet:actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # ratchet:actions/checkout@v2
       - name: deploy to prod
         uses: nais/deploy/actions/deploy@e1d100f14637a6caa0aec40f5b5c7fd0c3ce500e # ratchet:nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
           RESOURCE: .nais/nais.yaml
-          VAR: image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.version }},aiven_audit_pat=${{ secrets.AIVEN_AUDIT_PAT }}
+          VAR: image=${{ needs.build_push_sign.outputs.tag }}

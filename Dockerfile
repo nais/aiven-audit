@@ -1,22 +1,17 @@
-FROM golang:1.20-alpine AS builder
+FROM cgr.dev/chainguard/go:1.20 AS builder
 
 WORKDIR /app
+ENV CGO_ENABLED=0
 
-# Copy the Go Modules manifests
-COPY go.mod go.mod
-COPY go.sum go.sum
+COPY . .
 
-# cache deps before building and copying source so that we don't need to re-download as much
-# and so that source changes don't invalidate our downloaded layer
 RUN go mod download
 
-# Copy the go source
-COPY cmd/ cmd/
-COPY pkg/ pkg/
+RUN go test -v ./...
 
 RUN go build -o aiven-audit ./cmd/aiven-audit/
 
-FROM alpine:3.17
+FROM cgr.dev/chainguard/static
 
 WORKDIR /app
 
