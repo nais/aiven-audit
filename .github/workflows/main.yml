@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # ratchet:actions/checkout@v2
       - name: deploy to prod
-        uses: nais/deploy/actions/deploy@e1d100f14637a6caa0aec40f5b5c7fd0c3ce500e # ratchet:nais/deploy/actions/deploy@v1
+        uses: nais/deploy/actions/deploy@14cc34d1dedd01c00bbdd3d85f8284cd723283a2 # ratchet:nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
