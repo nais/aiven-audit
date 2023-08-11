@@ -1,4 +1,4 @@
-FROM cgr.dev/chainguard/go:1.20 AS builder
+FROM cgr.dev/chainguard/go:1.21 AS builder
 
 WORKDIR /app
 ENV CGO_ENABLED=0
