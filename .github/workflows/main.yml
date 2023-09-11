@@ -52,6 +52,7 @@ jobs:
         uses: nais/deploy/actions/deploy@e1d100f14637a6caa0aec40f5b5c7fd0c3ce500e # ratchet:nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          aiven_audit_pat: ${{ secrets.AIVEN_AUDIT_PAT }}
           CLUSTER: prod-gcp
           RESOURCE: .nais/nais.yaml
           VAR: image=${{ needs.build_push_sign.outputs.tag }}
