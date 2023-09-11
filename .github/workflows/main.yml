@@ -12,10 +12,9 @@ on:
       - "*.md"
 
 env:
-  BUILDER_IMG: "cgr.dev/chainguard/go:1.20"
-  RUNNER_IMG: "cgr.dev/chainguard/static"
-  BASEIMG_ID: "https://github.com/chainguard-images/images/.github/workflows/release.yaml@refs/heads/main"
-  BASEIMG_ISSUER: "https://token.actions.githubusercontent.com"
+  RUNNER_IMG: "gcr.io/distroless/static-debian11:nonroot"
+  BASEIMG_ID: "keyless@distroless.iam.gserviceaccount.com"
+  BASEIMG_ISSUER: "https://accounts.google.com"
 
 jobs:
   build_push_sign:
@@ -31,8 +30,6 @@ jobs:
         uses: sigstore/cosign-installer@66dd3f388647c8d36a2b8b27371cce115a10e003 # ratchet:sigstore/cosign-installer@main
         with:
           cosign-release: 'v2.0.0'
-      - name: Verify builder image
-        run: cosign verify --certificate-identity ${{ env.BASEIMG_ID }} --certificate-oidc-issuer ${{ env.BASEIMG_ISSUER }} ${{ env.BUILDER_IMG }}
       - name: Verify runner image
         run: cosign verify --certificate-identity ${{ env.BASEIMG_ID }} --certificate-oidc-issuer ${{ env.BASEIMG_ISSUER }} ${{ env.RUNNER_IMG }}
       - uses: nais/platform-build-push-sign@8b336817c5749f179373fd63a7f511bae7246f10 # ratchet:nais/build-push-sign@main
@@ -57,4 +54,4 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
           RESOURCE: .nais/nais.yaml
-          VAR: image=${{ needs.build_push_sign.outputs.tag }}
+          VAR: image=${{ needs.build_push_sign.outputs.tag }},aiven_audit_pat=${{ secrets.AIVEN_AUDIT_PAT }}
