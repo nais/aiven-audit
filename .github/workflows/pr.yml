@@ -1,8 +1,11 @@
 name: Test PRs
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
-    types: [ opened, reopened, edited ]
 
 jobs:
   build_and_test:
