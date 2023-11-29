@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # ratchet:actions/checkout@v2
       - name: Install cosign
-        uses: sigstore/cosign-installer@9c520b997e685cb69e1ac226f7dce8114e8f36df # ratchet:sigstore/cosign-installer@main
+        uses: sigstore/cosign-installer@1fc5bd396d372bee37d608f955b336615edf79c8 # ratchet:sigstore/cosign-installer@main
         with:
           cosign-release: 'v2.2.1'
       - name: Verify runner image
