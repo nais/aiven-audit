@@ -24,6 +24,7 @@ jobs:
       id-token: write
     outputs:
       tag: "${{ steps.build_push_sign.outputs.tag }}"
+      version: "${{ steps.build_push_sign.outputs.version }}"
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # ratchet:actions/checkout@v2
       - name: Install cosign
@@ -41,17 +42,14 @@ jobs:
           push: true
           workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
 
-  deploy:
-    name: Deploy to prod-gcp
+  rollout:
+    permissions:
+      id-token: write
+    needs: ["build_push_sign"]
+    runs-on: fasit-deploy
     if: github.ref == 'refs/heads/main'
-    needs: [build_push_sign]
-    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # ratchet:actions/checkout@v2
-      - name: deploy to prod
-        uses: nais/deploy/actions/deploy@0bca2c7e607d30fd757a2a23fb7d07b3ff96d540 # ratchet:nais/deploy/actions/deploy@v1
-        env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: prod-gcp
-          RESOURCE: .nais/nais.yaml,.nais/alerts.yml
-          VAR: image=${{ needs.build_push_sign.outputs.tag }},aiven_audit_pat=${{ secrets.AIVEN_AUDIT_PAT }}
+      - uses: nais/fasit-deploy@main # ratchet:exclude
+        with:
+          json: '{"image": {"tag": "${{ needs.build_push_sign.outputs.version }}"}}'
+          feature_name: aiven-audit

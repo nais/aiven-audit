@@ -1,0 +1,44 @@
+{{ if .Values.alerts }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "aiven-audit.fullname" . }}-alerts
+  namespace: {{ .Values.app.namespace }}
+  labels:
+    {{ include "aiven-audit.labels" . | nindent 4 }}
+spec:
+  groups:
+    - name: aiven-audit
+      rules:
+        - alert: Antall restarts
+          expr: sum(increase(kube_pod_container_status_restarts_total{container=~"aiven-audit"}[5m])) by (container) > 10
+          for: 5m
+          annotations:
+            description: |
+              {{ include "aiven-audit.fullname" . }} har restartet flere ganger de siste 5 minuttene!
+            action: "Se `kubectl describe pod aiven-audit` for events, og `kubectl logs -l app=aiven-audit` for logger"
+          labels:
+            severity: warning
+            namespace: {{ .Values.app.namespace }}
+        - alert: Ingen tilgjengelige podder
+          expr: kube_deployment_status_replicas_available{deployment="aiven-audit"} == 0
+          for: 10m
+          annotations:
+            description: |
+              {{ include "aiven-audit.fullname" . }} har ingen tilgjengelige podder!
+            action: "Se `kubectl get pod -l app=aiven-audit` for status på podder, og `kubectl logs -l app=aiven-audit` for logger."
+          labels:
+            severity: warning
+            namespace: {{ .Values.app.namespace }}
+        - alert: Høy feilrate i logger
+          expr: (100 * sum by (log_app, log_namespace) (rate(logd_messages_total{log_app="aiven-audit",log_level=~"Error"}[3m])) / sum by (log_app, log_namespace) (rate(logd_messages_total{log_app="aiven-audit"}[3m]))) > 10
+          for: 5m
+          annotations:
+            description: |
+              aiven-audit logger mange errors
+            action: "Sjekk loggene til aiven-audit for å se hvorfor det er så mye feil"
+          labels:
+            severity: warning
+            namespace: {{ .Values.app.namespace }}
+{{ end }}
