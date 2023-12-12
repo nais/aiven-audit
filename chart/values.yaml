@@ -18,8 +18,7 @@ app:
     max: 1
   secrets:
     aiven:
-      pat:
-        credentials: ""
+      pat: ""
 
 image:
   repository: europe-north1-docker.pkg.dev/nais-io/nais/images
