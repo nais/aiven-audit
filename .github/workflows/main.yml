@@ -73,21 +73,24 @@ jobs:
           version: '3.8.0'
       - name: Set versions
         run: |-
-          yq e '.version = "${{ needs.build_push_sign.outputs.version }}"' --inplace "${chart}/Chart.yaml"
-          yq e '.image.tag = "${{ needs.build_push_sign.outputs.version }}"' --inplace "${chart}/values.yaml"
+          yq e '.version = "$version"' --inplace "./chart/Chart.yaml"
+          yq e '.image.tag = "$version"' --inplace "./chart/values.yaml"
+        env:
+          version: ${{ needs.build_push_sign.outputs.version }}
       - name: Build Chart
         run: |-
           helm package "$FEATURE_NAME"
       - name: Push Chart
         if: github.ref == 'refs/heads/main'
         run: |-
-          helm push "$FEATURE_NAME" oci://${{ env.GOOGLE_REGISTRY }}/nais-io/nais/feature
+          helm push "$FEATURE_NAME" oci://$GOOGLE_REGISTRY/nais-io/nais/feature
 
   rollout:
     runs-on: fasit-deploy
     permissions:
       id-token: write
     needs:
+      - build_push_sign
       - chart
     steps:
       - uses: nais/fasit-deploy@main # ratchet:exclude
