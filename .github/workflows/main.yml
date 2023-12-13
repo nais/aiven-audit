@@ -25,13 +25,9 @@ jobs:
       contents: read
       id-token: write
     outputs:
-      tag: "${{ steps.build_push_sign.outputs.tag }}"
       version: "${{ steps.build_push_sign.outputs.version }}"
-      chart_name: ${{ steps.package_chart.outputs.name }}
-      chart_version: ${{ steps.package_chart.outputs.version }}
-      chart_archive: ${{ steps.package_chart.outputs.archive }}
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # ratchet:actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # ratchet:actions/checkout@v2
       - name: Install cosign
         uses: sigstore/cosign-installer@9614fae9e5c5eddabb09f90a270fcb487c9f7149 # ratchet:sigstore/cosign-installer@main
         with:
@@ -46,37 +42,55 @@ jobs:
           google_service_account: gh-aiven-audit
           push: true
           workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
-      - name: Package chart
-        id: package_chart
-        env:
-          CHART_PATH: ./chart
-        run: |
-          base_version="$(yq '.version' < "${{ env.CHART_PATH }}/Chart.yaml")"
-          chart_version="${base_version}-${{ steps.build_push_sign.outputs.version }}"
 
-          yq eval \
-            '.version="'"$chart_version"'"' \
-            "${{ env.CHART_PATH }}/Chart.yaml" --inplace
-          yq eval \
-            '.imageTag="${{ steps.build_push_sign.outputs.version }}"' \
-            "${{ env.CHART_PATH }}/values.yaml" --inplace
-
-          # helm dependency update "${{ env.CHART_PATH }}"
-          helm package "${{ env.CHART_PATH }}" --destination .
-
-          name=$(yq '.name' < "${{ env.CHART_PATH }}/Chart.yaml")
-          echo "name=$name" >> $GITHUB_OUTPUT
-          echo "version=$chart_version" >> $GITHUB_OUTPUT
-          echo "archive=$name-$chart_version.tgz" >> $GITHUB_OUTPUT
+  chart:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    name: Build and push chart
+    runs-on: ubuntu-latest
+    needs:
+      - build_push_sign
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # ratchet:actions/checkout@v3
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        if: github.ref == 'refs/heads/main'
+        uses: 'google-github-actions/auth@67e9c72af6e0492df856527b474995862b7b6591' # ratchet:google-github-actions/auth@v2.0.0
+        with:
+          workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: 'gh-aiven-audit@nais-io.iam.gserviceaccount.com'
+          token_format: 'access_token'
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@e30db14379863a8c79331b04a9969f4c1e225e0b' # ratchet:google-github-actions/setup-gcloud@v1
+      - name: 'Log in to Google Artifact Registry'
+        if: github.ref == 'refs/heads/main'
+        run: |-
+          echo '${{ steps.auth.outputs.access_token }}' | docker login -u oauth2accesstoken --password-stdin https://${{ env.GOOGLE_REGISTRY }}
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # ratchet:azure/setup-helm@v3
+        name: 'Setup Helm'
+        with:
+          version: '3.8.0'
+      - name: Set versions
+        run: |-
+          yq e '.version = "${{ needs.build_push_sign.outputs.version }}"' --inplace "${chart}/Chart.yaml"
+          yq e '.image.tag = "${{ needs.build_push_sign.outputs.version }}"' --inplace "${chart}/values.yaml"
+      - name: Build Chart
+        run: |-
+          helm package "$FEATURE_NAME"
+      - name: Push Chart
+        if: github.ref == 'refs/heads/main'
+        run: |-
+          helm push "$FEATURE_NAME" oci://${{ env.GOOGLE_REGISTRY }}/nais-io/nais/feature
 
   rollout:
     runs-on: fasit-deploy
     permissions:
       id-token: write
     needs:
-      - build_push_sign
+      - chart
     steps:
       - uses: nais/fasit-deploy@main # ratchet:exclude
         with:
-          chart: oci://${{ env.GOOGLE_REGISTRY }}/nais-io/nais/feature/${{ needs.build_and_push.outputs.chart_name }}
-          version: ${{ needs.build_push_sign.outputs.chart_version }}
+          chart: oci://${{ env.GOOGLE_REGISTRY }}/nais-io/nais/feature/${{ env.FEATURE_NAME }}
+          version: ${{ needs.build_push_sign.outputs.version }}
