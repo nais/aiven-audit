@@ -101,4 +101,5 @@ jobs:
         with:
           chart: oci://${{ env.GOOGLE_REGISTRY }}/nais-io/nais/feature/${{ env.FEATURE_NAME }}
           version: "0.0.1"
+          name: aiven-audit
           
