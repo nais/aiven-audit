@@ -2,9 +2,8 @@ apiVersion: nais.io/v1alpha1
 kind: Application
 metadata:
   labels:
-    team: aura
+    team: nais
   name: aiven-audit
-  namespace: {{ .Values.app.namespace }}
 spec:
   accessPolicy:
     outbound:

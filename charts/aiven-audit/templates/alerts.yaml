@@ -4,7 +4,6 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: {{ include "aiven-audit.fullname" . }}-alerts
-  namespace: {{ .Values.app.namespace }}
   labels:
     {{ include "aiven-audit.labels" . | nindent 4 }}
 spec:
