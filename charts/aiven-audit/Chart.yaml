@@ -4,3 +4,5 @@ description: App that fetches project event logs from the Aiven API and logs the
 type: application
 version: "0.0.1"
 appVersion: "bogus"
+source:
+  - "https://github.com/nais/aiven-audit/tree/main/charts/aiven-audit/"
