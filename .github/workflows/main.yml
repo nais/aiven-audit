@@ -100,6 +100,6 @@ jobs:
       - uses: nais/fasit-deploy@main # ratchet:exclude
         with:
           chart: oci://${{ env.GOOGLE_REGISTRY }}/nais-io/nais/feature/${{ env.FEATURE_NAME }}
-          version: "0.0.1"
+          version: ${{ needs.build_push_sign.outputs.version }}
           feature_name: ${{ env.FEATURE_NAME }}
           
