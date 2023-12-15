@@ -1,0 +1,39 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  labels:
+    team: aura
+  name: aiven-audit
+  namespace: {{ .Values.app.namespace }}
+spec:
+  accessPolicy:
+    outbound:
+      external:
+        {{- range .Values.app.outbound.external }}
+          - host: {{ . }}
+        {{- end }}
+  image: "{{ .Values.image.repository }}/{{ .Values.image.name}}:{{ .Values.image.tag}}"
+  liveness:
+    failureThreshold: 3
+    path: /nais/isalive
+    periodSeconds: 10
+    timeout: 1
+  readiness:
+    path: /nais/isready
+  port: 8080
+  prometheus:
+    enabled: true
+    path: /metrics
+  replicas:
+    max: {{ .Values.app.replicas.min }}
+    min: {{ .Values.app.replicas.max }}
+  resources:
+    limits:
+      cpu: {{ .Values.app.resources.limits.cpu }}
+      memory: {{ .Values.app.resources.limits.memory }}
+    requests:
+      cpu: {{ .Values.app.resources.requests.cpu }}
+      memory: {{ .Values.app.resources.requests.memory }}
+  skipCaBundle: true
+  envFrom:
+    - secret: aiven-audit

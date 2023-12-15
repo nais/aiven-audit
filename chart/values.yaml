@@ -1,0 +1,26 @@
+alerts: true
+
+app:
+  fullname: aiven-audit
+  namespace: nais-system
+  outbound:
+    external:
+      - api.aiven.io
+  resources:
+    limits:
+      memory: 128Mi
+      cpu: 200m
+    requests:
+      memory: 64Mi
+      cpu: 100m
+  replicas:
+    min: 1
+    max: 1
+  secrets:
+    aiven:
+      pat: ""
+
+image:
+  repository: europe-north1-docker.pkg.dev/nais-io/nais/images
+  name: aiven-audit
+  tag: 2023-11-29-142115-227cce4

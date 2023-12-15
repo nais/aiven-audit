@@ -1,0 +1,15 @@
+dependencies:
+  - allOf:
+      - naiserator
+environmentKinds:
+  - legacy
+  - tenant
+values:
+  image.tag:
+    description: Docker image tag
+    config:
+      type: string
+  app.secrets.aiven.pat:
+    displayName: Access token for the Aiven API, default is blank
+    config:
+      type: string
