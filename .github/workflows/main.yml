@@ -70,7 +70,7 @@ jobs:
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # ratchet:azure/setup-helm@v3
         name: 'Setup Helm'
         with:
-          version: '3.8.0'
+          version: 'v3.12.0'
       - name: Set versions
         run: |-
           yq e '.version = "$version"' --inplace "./charts/aiven-audit/Chart.yaml"
