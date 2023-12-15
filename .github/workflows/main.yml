@@ -73,6 +73,7 @@ jobs:
           version: '3.8.0'
       - name: Set versions
         run: |-
+          yq e '.version = "$version"' --inplace "./charts/aiven-audit/Chart.yaml"
           yq e '.appVersion = "$version"' --inplace "./charts/aiven-audit/Chart.yaml"
           yq e '.image.tag = "$version"' --inplace "./charts/aiven-audit/values.yaml"
         env:
