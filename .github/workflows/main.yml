@@ -73,11 +73,10 @@ jobs:
           version: 'v3.12.0'
       - name: Set versions
         run: |-
-          yq e '.version = "$version"' --inplace "./charts/aiven-audit/Chart.yaml"
-          yq e '.appVersion = "$version"' --inplace "./charts/aiven-audit/Chart.yaml"
-          yq e '.image.tag = "$version"' --inplace "./charts/aiven-audit/values.yaml"
-        env:
-          version: ${{ needs.build_push_sign.outputs.version }}
+          echo "Version: ${{ needs.build_push_sign.outputs.version }}"
+          yq e '.version = "${{ needs.build_push_sign.outputs.version }}"' --inplace "./charts/aiven-audit/Chart.yaml"
+          yq e '.appVersion = "${{ needs.build_push_sign.outputs.version }}"' --inplace "./charts/aiven-audit/Chart.yaml"
+          yq e '.image.tag = "${{ needs.build_push_sign.outputs.version }}"' --inplace "./charts/aiven-audit/values.yaml"
       - name: Build Chart
         run: |-
           for chart in charts/*; do
