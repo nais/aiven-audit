@@ -95,7 +95,7 @@ jobs:
       id-token: write
     needs:
       - build_push_sign
-      - charts
+      - chart
     steps:
       - uses: nais/fasit-deploy@main # ratchet:exclude
         with:
