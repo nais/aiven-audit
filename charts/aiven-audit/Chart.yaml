@@ -2,5 +2,5 @@ apiVersion: v2
 name: aiven-audit
 description: App that fetches project event logs from the Aiven API and logs them to logs.adeo.no.
 type: application
-version: "this_is_not_valid_semver"
-appVersion: 0.0.1
+version: "0.0.1"
+appVersion: "bogus"

@@ -23,4 +23,4 @@ app:
 image:
   repository: europe-north1-docker.pkg.dev/nais-io/nais/images
   name: aiven-audit
-  tag: 2023-11-29-142115-227cce4
+  tag: "does_not_exist"
