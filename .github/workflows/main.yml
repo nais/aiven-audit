@@ -47,7 +47,7 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
-    name: Build and push chart
+    name: Build and push charts
     runs-on: ubuntu-latest
     needs:
       - build_push_sign
@@ -79,11 +79,15 @@ jobs:
           version: ${{ needs.build_push_sign.outputs.version }}
       - name: Build Chart
         run: |-
-          helm package "$FEATURE_NAME"
+          for chart in charts/*; do
+            helm package "$chart"
+          done
       - name: Push Chart
         if: github.ref == 'refs/heads/main'
         run: |-
-          helm push "$FEATURE_NAME" oci://$GOOGLE_REGISTRY/nais-io/nais/feature
+          for chart in *.tgz; do
+            helm push "$chart" oci://${{ env.GOOGLE_REGISTRY }}/nais-io/nais/feature
+          done
 
   rollout:
     runs-on: fasit-deploy
@@ -91,7 +95,7 @@ jobs:
       id-token: write
     needs:
       - build_push_sign
-      - chart
+      - charts
     steps:
       - uses: nais/fasit-deploy@main # ratchet:exclude
         with:
