@@ -10,6 +10,9 @@ values:
     config:
       type: string
   app.secrets.aiven.pat:
-    displayName: Access token for the Aiven API, default is blank
+    displayName: Access token for the Aiven API
+    computed:
+      template: '"{{ .Env.aiven_application_token_aiven_audit }}"'
     config:
       type: string
+      secret: true
