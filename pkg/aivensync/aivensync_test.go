@@ -6,9 +6,10 @@ import (
 
 func TestFindStartIndex(t *testing.T) {
 	events := []*AivenEvent{
-		{Actor: "a", EventDesc: "a", EventType: "a", ServiceName: "a", Time: "a"},
-		{Actor: "b", EventDesc: "b", EventType: "b", ServiceName: "b", Time: "b"},
-		{Actor: "c", EventDesc: "c", EventType: "c", ServiceName: "c", Time: "c"},
+		{ID: "a", Actor: "a", EventDesc: "a", EventType: "a", ServiceName: "a", Time: "a"},
+		{ID: "d", Actor: "a", EventDesc: "a", EventType: "a", ServiceName: "a", Time: "a"},
+		{ID: "b", Actor: "b", EventDesc: "b", EventType: "b", ServiceName: "b", Time: "b"},
+		{ID: "c", Actor: "c", EventDesc: "c", EventType: "c", ServiceName: "c", Time: "c"},
 	}
 
 	type args struct {
@@ -24,23 +25,39 @@ func TestFindStartIndex(t *testing.T) {
 			name: "find where to start if a was last acked event",
 			want: -1,
 			args: args{
-				lastAckedEvent: &AivenEvent{Actor: "a", EventDesc: "a", EventType: "a", ServiceName: "a", Time: "a"},
+				lastAckedEvent: &AivenEvent{ID: "a", Actor: "a", EventDesc: "a", EventType: "a", ServiceName: "a", Time: "a"},
 				events:         events,
 			},
 		},
 		{
 			name: "find where to start if b was last acked event",
-			want: 0,
+			want: 1,
 			args: args{
-				lastAckedEvent: &AivenEvent{Actor: "b", EventDesc: "b", EventType: "b", ServiceName: "b", Time: "b"},
+				lastAckedEvent: &AivenEvent{ID: "b", Actor: "b", EventDesc: "b", EventType: "b", ServiceName: "b", Time: "b"},
 				events:         events,
 			},
 		},
 		{
 			name: "find where to start if c was last acked event",
-			want: 1,
+			want: 2,
 			args: args{
-				lastAckedEvent: &AivenEvent{Actor: "c", EventDesc: "c", EventType: "c", ServiceName: "c", Time: "c"},
+				lastAckedEvent: &AivenEvent{ID: "c", Actor: "c", EventDesc: "c", EventType: "c", ServiceName: "c", Time: "c"},
+				events:         events,
+			},
+		},
+		{
+			name: "find where to start if last acked event not in set of events",
+			want: 3,
+			args: args{
+				lastAckedEvent: &AivenEvent{ID: "z", Actor: "z", EventDesc: "z", EventType: "z", ServiceName: "z", Time: "z"},
+				events:         events,
+			},
+		},
+		{
+			name: "find where to start if last acked event not set",
+			want: 3,
+			args: args{
+				lastAckedEvent: nil,
 				events:         events,
 			},
 		},

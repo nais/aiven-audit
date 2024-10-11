@@ -13,6 +13,7 @@ type aivenEventsResponse struct {
 }
 
 type AivenEvent struct {
+	ID          string `json:"id"`
 	Actor       string `json:"actor"`
 	EventDesc   string `json:"event_desc"`
 	EventType   string `json:"event_type"`
@@ -21,11 +22,7 @@ type AivenEvent struct {
 }
 
 func (a *AivenEvent) Equals(b *AivenEvent) bool {
-	return a.Actor == b.Actor &&
-		a.EventDesc == b.EventDesc &&
-		a.EventType == b.EventType &&
-		a.ServiceName == b.ServiceName &&
-		a.Time == b.Time
+	return a.ID == b.ID
 }
 
 type AivenProject struct {
