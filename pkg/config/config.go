@@ -7,15 +7,19 @@ import (
 
 type AivenAuditConfig struct {
 	AivenAPIToken string `json:"aivenAPIToken"`
+	Tenant        string `json:"tenant"`
 }
 
 const (
 	AivenAPIToken = "aivenAPIToken"
+	Tenant        = "tenant"
 )
 
 func New() (*AivenAuditConfig, error) {
 	viper.SetDefault(AivenAPIToken, "")
+	viper.SetDefault(Tenant, "")
 	err := viper.BindEnv(AivenAPIToken, "AIVEN_AUDIT_PAT")
+	err = viper.BindEnv(Tenant, "AIVEN_TENANT")
 
 	if err != nil {
 		return nil, err

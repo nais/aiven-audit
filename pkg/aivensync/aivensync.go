@@ -2,6 +2,7 @@ package aivensync
 
 import (
 	"fmt"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -12,13 +13,15 @@ type AivenSync struct {
 	lastAckedEvent map[string]*AivenEvent
 	client         AivenClient
 	metrics        *metrics.Metrics
+	tenant         string
 }
 
-func NewAivenSync(aivenToken string, m *metrics.Metrics) AivenSync {
+func NewAivenSync(aivenToken string, tenant string, m *metrics.Metrics) AivenSync {
 	return AivenSync{
 		lastAckedEvent: make(map[string]*AivenEvent),
 		client:         NewAivenClient(aivenToken),
 		metrics:        m,
+		tenant:         tenant,
 	}
 }
 
@@ -30,22 +33,24 @@ func (as *AivenSync) Synchronize() error {
 	}
 
 	for _, project := range projects {
-		log.Infof("fetching events for: %v", project.ProjectName)
-		events, err := as.client.GetProjectEvents(project.ProjectName)
-		if err != nil {
-			return fmt.Errorf("get project events: %w", err)
-		}
+		if strings.HasPrefix(project.ProjectName, as.tenant) {
+			log.Infof("fetching events for: %v", project.ProjectName)
+			events, err := as.client.GetProjectEvents(project.ProjectName)
+			if err != nil {
+				return fmt.Errorf("get project events: %w", err)
+			}
 
-		for i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName]); i >= 0; i-- {
-			log.WithFields(log.Fields{
-				"AivenAudit_Actor":       events[i].Actor,
-				"AivenAudit_EventType":   events[i].EventType,
-				"AivenAudit_ProjectName": project.ProjectName,
-				"AivenAudit_ServiceName": events[i].ServiceName,
-				"AivenAudit_Time":        events[i].Time,
-			}).Info(events[i].EventDesc)
-			as.lastAckedEvent[project.ProjectName] = events[i]
-			as.metrics.EventLogsSyncCounter.Inc()
+			for i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName]); i >= 0; i-- {
+				log.WithFields(log.Fields{
+					"AivenAudit_Actor":       events[i].Actor,
+					"AivenAudit_EventType":   events[i].EventType,
+					"AivenAudit_ProjectName": project.ProjectName,
+					"AivenAudit_ServiceName": events[i].ServiceName,
+					"AivenAudit_Time":        events[i].Time,
+				}).Info(events[i].EventDesc)
+				as.lastAckedEvent[project.ProjectName] = events[i]
+				as.metrics.EventLogsSyncCounter.Inc()
+			}
 		}
 	}
 
