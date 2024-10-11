@@ -40,6 +40,7 @@ func (as *AivenSync) Synchronize() error {
 			log.WithFields(log.Fields{
 				"AivenAudit_Actor":       events[i].Actor,
 				"AivenAudit_EventType":   events[i].EventType,
+				"AivenAudit_ProjectName": project.ProjectName,
 				"AivenAudit_ServiceName": events[i].ServiceName,
 				"AivenAudit_Time":        events[i].Time,
 			}).Info(events[i].EventDesc)
