@@ -13,7 +13,7 @@ func TestNew(t *testing.T) {
 	cfg, err := config.New()
 	assert.NoError(t, err)
 	assert.Equal(t, &config.AivenAuditConfig{
-		AivenAPIToken: "unknown tenant",
+		AivenAPIToken: "",
 	}, cfg)
 }
 
