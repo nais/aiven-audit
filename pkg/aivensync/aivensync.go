@@ -26,7 +26,7 @@ func NewAivenSync(aivenToken string, tenant string, m *metrics.Metrics) AivenSyn
 }
 
 func (as *AivenSync) Synchronize() error {
-	log.Info("syncing")
+	log.Info("syncing for: " + as.tenant)
 	projects, err := as.client.GetProjects()
 	if err != nil {
 		return fmt.Errorf("get projects: %w", err)
@@ -47,6 +47,7 @@ func (as *AivenSync) Synchronize() error {
 					"AivenAudit_ProjectName": project.ProjectName,
 					"AivenAudit_ServiceName": events[i].ServiceName,
 					"AivenAudit_Time":        events[i].Time,
+					"AivenAudit_Tenant":      as.tenant,
 				}).Info(events[i].EventDesc)
 				as.lastAckedEvent[project.ProjectName] = events[i]
 				as.metrics.EventLogsSyncCounter.Inc()
