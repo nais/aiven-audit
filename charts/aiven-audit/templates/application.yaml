@@ -11,6 +11,9 @@ spec:
         {{- range .Values.app.outbound.external }}
           - host: {{ . }}
         {{- end }}
+  env:
+  - value: '{{ .Values.fasit.tenant.name }}'
+    name: "TENANT"
   image: "{{ .Values.image.repository }}/{{ .Values.image.name}}:{{ .Values.image.tag}}"
   liveness:
     failureThreshold: 3
