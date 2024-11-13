@@ -17,7 +17,7 @@ const (
 
 func New() (*AivenAuditConfig, error) {
 	viper.SetDefault(AivenAPIToken, "")
-	viper.SetDefault(Tenant, "")
+	viper.SetDefault(Tenant, "Unknown tenant")
 	err := viper.BindEnv(AivenAPIToken, "AIVEN_AUDIT_PAT")
 	err = viper.BindEnv(Tenant, "TENANT")
 
