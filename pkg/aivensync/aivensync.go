@@ -33,25 +33,22 @@ func (as *AivenSync) Synchronize() error {
 	}
 
 	for _, project := range projects {
-		if strings.HasPrefix(project.ProjectName, as.tenant) {
-			log.Infof("fetching events for: %v", project.ProjectName)
-			events, err := as.client.GetProjectEvents(project.ProjectName)
-			if err != nil {
-				return fmt.Errorf("get project events: %w", err)
-			}
+		log.Infof("fetching events for: %v", project.ProjectName)
+		events, err := as.client.GetProjectEvents(project.ProjectName)
+		if err != nil {
+			return fmt.Errorf("get project events: %w", err)
+		}
 
-			for i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName]); i >= 0; i-- {
-				log.WithFields(log.Fields{
-					"AivenAudit_Actor":       events[i].Actor,
-					"AivenAudit_EventType":   events[i].EventType,
-					"AivenAudit_ProjectName": project.ProjectName,
-					"AivenAudit_ServiceName": events[i].ServiceName,
-					"AivenAudit_Time":        events[i].Time,
-					"AivenAudit_Tenant":      as.tenant,
-				}).Info(events[i].EventDesc)
-				as.lastAckedEvent[project.ProjectName] = events[i]
-				as.metrics.EventLogsSyncCounter.Inc()
-			}
+		for i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName]); i >= 0; i-- {
+			log.WithFields(log.Fields{
+				"AivenAudit_Actor":       events[i].Actor,
+				"AivenAudit_EventType":   events[i].EventType,
+				"AivenAudit_ProjectName": project.ProjectName, // This is <tenant>-<cluster>, most often.
+				"AivenAudit_ServiceName": events[i].ServiceName,
+				"AivenAudit_Time":        events[i].Time,
+			}).Info(events[i].EventDesc)
+			as.lastAckedEvent[project.ProjectName] = events[i]
+			as.metrics.EventLogsSyncCounter.Inc()
 		}
 	}
 
