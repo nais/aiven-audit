@@ -2,8 +2,7 @@ dependencies:
   - allOf:
       - naiserator
 environmentKinds:
-  - legacy
-  - tenant
+  - management
 values:
   image.tag:
     description: Docker image tag
