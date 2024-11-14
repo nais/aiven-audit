@@ -5,6 +5,11 @@ environmentKinds:
   - legacy
   - tenant
 values:
+  tenant.name:
+    displayName: Tenant name
+    computed:
+      template: '"{{ .Tenant.Name }}"'
+
   image.tag:
     description: Docker image tag
     config:
@@ -13,6 +18,7 @@ values:
     displayName: Access token for the Aiven API
     computed:
       template: '"{{ .Env.aiven_application_token_aiven_audit }}"'
+
     config:
       type: string
       secret: true
