@@ -2,7 +2,6 @@ package aivensync
 
 import (
 	"fmt"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -13,20 +12,18 @@ type AivenSync struct {
 	lastAckedEvent map[string]*AivenEvent
 	client         AivenClient
 	metrics        *metrics.Metrics
-	tenant         string
 }
 
-func NewAivenSync(aivenToken string, tenant string, m *metrics.Metrics) AivenSync {
+func NewAivenSync(aivenToken string, m *metrics.Metrics) AivenSync {
 	return AivenSync{
 		lastAckedEvent: make(map[string]*AivenEvent),
 		client:         NewAivenClient(aivenToken),
 		metrics:        m,
-		tenant:         tenant,
 	}
 }
 
 func (as *AivenSync) Synchronize() error {
-	log.Info("syncing for: " + as.tenant)
+	log.Info("syncing")
 	projects, err := as.client.GetProjects()
 	if err != nil {
 		return fmt.Errorf("get projects: %w", err)

@@ -47,7 +47,7 @@ func run() error {
 		return err
 	}
 
-	aivenSync := aivensync.NewAivenSync(cfg.AivenAPIToken, cfg.Tenant, m)
+	aivenSync := aivensync.NewAivenSync(cfg.AivenAPIToken, m)
 
 	go syncEvents(programContext, aivenSync)
 
