@@ -2,14 +2,8 @@ dependencies:
   - allOf:
       - naiserator
 environmentKinds:
-  - legacy
-  - tenant
+  - management
 values:
-  tenant.name:
-    displayName: Tenant name
-    computed:
-      template: '"{{ .Tenant.Name }}"'
-
   image.tag:
     description: Docker image tag
     config:
@@ -21,4 +15,5 @@ values:
 
     config:
       type: string
+
       secret: true
