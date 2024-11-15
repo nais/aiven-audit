@@ -16,3 +16,7 @@ values:
     displayName: Tenant name
     computed:
       template: '"{{ .Tenant.Name }}"'
+  app.serviceaccount:
+    displayName: service account for aiven_audit
+    computed:
+      template: '"{{ .Env.aiven_audit_service_account }}"'
