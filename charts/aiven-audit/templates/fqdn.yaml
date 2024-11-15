@@ -1,0 +1,21 @@
+apiVersion: networking.gke.io/v1alpha3
+kind: FQDNNetworkPolicy
+metadata:
+  labels:
+    {{- include "aiven-audit.labels" . | nindent 4 }}
+  name: {{ .Release.Name }}
+spec:
+  egress:
+    - ports:
+        - port: 443
+          protocol: TCP
+      to:
+        - fqdns:
+            {{- range .Values.app.outbound.external }}
+            - {{ . }}
+            {{- end }}
+  podSelector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  policyTypes:
+    - Egress

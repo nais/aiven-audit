@@ -1,6 +1,3 @@
-dependencies:
-  - allOf:
-      - naiserator
 environmentKinds:
   - management
 values:
@@ -12,8 +9,10 @@ values:
     displayName: Access token for the Aiven API
     computed:
       template: '"{{ .Env.aiven_application_token_aiven_audit }}"'
-
     config:
       type: string
-
       secret: true
+  tenant.name:
+    displayName: Tenant name
+    computed:
+      template: '"{{ .Tenant.Name }}"'
