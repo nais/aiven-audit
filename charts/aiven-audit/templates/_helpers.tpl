@@ -47,5 +47,6 @@ Selector labels
 */}}
 {{- define "aiven-audit.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "aiven-audit.name" . }}
+app: {{ .Release.Name }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
