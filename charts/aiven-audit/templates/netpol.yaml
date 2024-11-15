@@ -11,9 +11,6 @@ spec:
           podSelector:
             matchLabels:
               k8s-app: kube-dns
-    - to:
-        - ipBlock:
-            cidr: {{ .Values.apiserverip }}/24
   ingress:
     - from:
         - namespaceSelector:
