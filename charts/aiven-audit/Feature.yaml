@@ -8,7 +8,7 @@ values:
   app.secrets.aiven.pat:
     displayName: Access token for the Aiven API
     computed:
-      template: '"{{ .Env.aiven_application_token_aiven_audit }}"'
+      template: '"{{ .Env.aiven_audit_user_token }}"'
     config:
       type: string
       secret: true
