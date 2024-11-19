@@ -3,9 +3,6 @@ alerts: true
 app:
   fullname: aiven-audit
   namespace: nais-system
-  outbound:
-    external:
-      - api.aiven.io
   resources:
     limits:
       memory: 128Mi

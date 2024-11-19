@@ -1,7 +1,9 @@
 apiVersion: networking.gke.io/v1alpha3
 kind: FQDNNetworkPolicy
 metadata:
-  name: {{ .Release.Name }}
+  name: "{{ .Release.Name }}-fqdn"
+  labels:
+    app: "{{ .Release.Name }}"
 spec:
   egress:
     - ports:
@@ -9,9 +11,7 @@ spec:
           protocol: TCP
       to:
         - fqdns:
-            {{- range .Values.app.outbound.external }}
-            - {{ . }}
-            {{- end }}
+          - api.aiven.io
   podSelector:
     matchLabels:
       app.kubernetes.io/instance: aiven-audit
