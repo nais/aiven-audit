@@ -1,12 +1,12 @@
 # Aiven Audit (Go) 📝🕵️
 
-Fetches project event logs from Aiven API, and logs them to logs.adeo.no.
+Fetches project event logs from Aiven API, and logs them to standard out.
 
 ## Configuration
 
-| environment variable  | description |
-| ------------- | ------------- |
-| AIVEN_AUDIT_PAT  | Access token for Aiven API  |
+| environment variable | description                |
+|----------------------|----------------------------|
+| AIVEN_AUDIT_PAT      | Access token for Aiven API |
 
 ## Verifying the aiven-audit images and their contents
 
