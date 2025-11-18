@@ -27,7 +27,7 @@ jobs:
     outputs:
       version: "${{ steps.build_push_sign.outputs.version }}"
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v2
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # ratchet:actions/checkout@v2
       - name: Install cosign
         uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62 # ratchet:sigstore/cosign-installer@main
         with:
@@ -52,7 +52,7 @@ jobs:
     needs:
       - build_push_sign
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v3
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # ratchet:actions/checkout@v3
       - id: "auth"
         name: "Authenticate to Google Cloud"
         if: github.ref == 'refs/heads/main'
