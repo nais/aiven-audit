@@ -7,7 +7,7 @@ toolchain go1.24.2
 require (
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/prometheus/client_golang v1.23.2
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 )
