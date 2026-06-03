@@ -2,8 +2,7 @@ package aivensync
 
 import (
 	"fmt"
-
-	log "github.com/sirupsen/logrus"
+	"log/slog"
 
 	"github.com/nais/aiven-audit/pkg/metrics"
 )
@@ -23,27 +22,27 @@ func NewAivenSync(aivenToken string, m *metrics.Metrics) AivenSync {
 }
 
 func (as *AivenSync) Synchronize() error {
-	log.Info("syncing")
+	slog.Info("syncing")
 	projects, err := as.client.GetProjects()
 	if err != nil {
 		return fmt.Errorf("get projects: %w", err)
 	}
 
 	for _, project := range projects {
-		log.Infof("fetching events for: %v", project.ProjectName)
+		slog.Info("fetching events", "project", project.ProjectName)
 		events, err := as.client.GetProjectEvents(project.ProjectName)
 		if err != nil {
 			return fmt.Errorf("get project events: %w", err)
 		}
 
 		for i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName]); i >= 0; i-- {
-			log.WithFields(log.Fields{
-				"AivenAudit_Actor":       events[i].Actor,
-				"AivenAudit_EventType":   events[i].EventType,
-				"AivenAudit_ProjectName": project.ProjectName, // This is <tenant>-<cluster>, most often.
-				"AivenAudit_ServiceName": events[i].ServiceName,
-				"AivenAudit_Time":        events[i].Time,
-			}).Info(events[i].EventDesc)
+			slog.Info(events[i].EventDesc,
+				"AivenAudit_Actor", events[i].Actor,
+				"AivenAudit_EventType", events[i].EventType,
+				"AivenAudit_ProjectName", project.ProjectName,
+				"AivenAudit_ServiceName", events[i].ServiceName,
+				"AivenAudit_Time", events[i].Time,
+			)
 			as.lastAckedEvent[project.ProjectName] = events[i]
 			as.metrics.EventLogsSyncCounter.Inc()
 		}

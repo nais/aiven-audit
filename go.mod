@@ -13,7 +13,6 @@ tool (
 require (
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/prometheus/client_golang v1.23.2
-	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 )
@@ -89,12 +88,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.7.0 // indirect
 	mvdan.cc/gofumpt v0.10.0 // indirect
-)
-
-tool (
-	github.com/securego/gosec/v2/cmd/gosec
-	golang.org/x/tools/cmd/deadcode
-	golang.org/x/vuln/cmd/govulncheck
-	honnef.co/go/tools/cmd/staticcheck
-	mvdan.cc/gofumpt
 )

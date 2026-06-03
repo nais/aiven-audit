@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"log/slog"
 
 	"github.com/nais/aiven-audit/pkg/aivensync"
 	"github.com/nais/aiven-audit/pkg/config"
@@ -22,11 +22,11 @@ const (
 )
 
 func main() {
-	log.SetFormatter(&log.JSONFormatter{})
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stderr, nil)))
 
 	err := run()
 	if err != nil {
-		log.Fatalf("fatal: %s", err)
+		slog.Error("fatal", "error", err)
 		os.Exit(1)
 	}
 }
@@ -37,7 +37,7 @@ func run() error {
 	go func() {
 		interrupt := make(chan os.Signal, 1)
 		signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
-		log.Infof("Received %s, shutting down", <-interrupt)
+		slog.Info("Received signal, shutting down", "signal", <-interrupt)
 		cancel()
 	}()
 
@@ -55,7 +55,7 @@ func run() error {
 }
 
 func syncEvents(ctx context.Context, aivenSync aivensync.AivenSync) {
-	log.Infof("Starting continuous event sync, initial sync scheduled in %s", continuousSyncInterval)
+	slog.Info("Starting continuous event sync", "initialSyncIn", continuousSyncInterval)
 
 	ticker := time.NewTicker(continuousSyncInterval)
 	for {
@@ -65,14 +65,14 @@ func syncEvents(ctx context.Context, aivenSync aivensync.AivenSync) {
 		case <-ticker.C:
 			err := aivenSync.Synchronize()
 			if err != nil {
-				log.Errorf("Continuous sync: %s", err)
+				slog.Error("Continuous sync", "error", err)
 			}
 		}
 	}
 }
 
 func httpd(ctx context.Context) error {
-	log.Info("Starting HTTP server")
+	slog.Info("Starting HTTP server")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(writer http.ResponseWriter, _ *http.Request) {
@@ -94,16 +94,16 @@ func httpd(ctx context.Context) error {
 
 		err := srv.Shutdown(ctx)
 		if err != nil {
-			log.Errorf("Shutdown HTTP server: %v", err)
+			slog.Error("Shutdown HTTP server", "error", err)
 		}
 	}()
 
 	err := srv.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("Serve HTTP: %v", err)
-	} else {
-		log.Info("HTTP server closed")
 	}
+
+	slog.Info("HTTP server closed")
 
 	return nil
 }
