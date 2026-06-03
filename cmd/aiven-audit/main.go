@@ -87,13 +87,14 @@ func httpd(ctx context.Context) error {
 	metrics.Handlers(mux)
 
 	srv := &http.Server{
-		Addr:    ":8080",
-		Handler: mux,
+		Addr:              ":8080",
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	go func() {
 		<-ctx.Done()
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 		defer cancel()
 
 		err := srv.Shutdown(ctx)
@@ -104,7 +105,7 @@ func httpd(ctx context.Context) error {
 
 	err := srv.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
-		return fmt.Errorf("Serve HTTP: %v", err)
+		return fmt.Errorf("serve HTTP: %v", err)
 	}
 
 	log.Info("HTTP server closed")
