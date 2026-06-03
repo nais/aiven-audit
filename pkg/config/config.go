@@ -16,7 +16,6 @@ const (
 func New() (*AivenAuditConfig, error) {
 	viper.SetDefault(AivenAPIToken, "")
 	err := viper.BindEnv(AivenAPIToken, "AIVEN_AUDIT_PAT")
-
 	if err != nil {
 		return nil, err
 	}
