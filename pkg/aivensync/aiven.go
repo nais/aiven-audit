@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 )
 
@@ -58,7 +57,7 @@ type aivenClient struct {
 func closeResponseBody(body io.ReadCloser) {
 	err := body.Close()
 	if err != nil {
-		slog.Warn("Unable to close response body", "error", err)
+		log.Warn("Unable to close response body", "error", err)
 	}
 }
 

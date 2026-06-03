@@ -7,6 +7,9 @@ import (
 	"github.com/nais/aiven-audit/pkg/metrics"
 )
 
+var log = slog.Default().With("subsystem", "app")
+var auditLog = slog.Default().With("subsystem", "audit")
+
 type AivenSync struct {
 	lastAckedEvent map[string]*AivenEvent
 	client         AivenClient
@@ -22,26 +25,26 @@ func NewAivenSync(aivenToken string, m *metrics.Metrics) AivenSync {
 }
 
 func (as *AivenSync) Synchronize() error {
-	slog.Info("syncing")
+	log.Info("syncing")
 	projects, err := as.client.GetProjects()
 	if err != nil {
 		return fmt.Errorf("get projects: %w", err)
 	}
 
 	for _, project := range projects {
-		slog.Info("fetching events", "project", project.ProjectName)
+		log.Info("fetching events", "project", project.ProjectName)
 		events, err := as.client.GetProjectEvents(project.ProjectName)
 		if err != nil {
 			return fmt.Errorf("get project events: %w", err)
 		}
 
 		for i := FindStartIndex(events, as.lastAckedEvent[project.ProjectName]); i >= 0; i-- {
-			slog.Info(events[i].EventDesc,
-				"AivenAudit_Actor", events[i].Actor,
-				"AivenAudit_EventType", events[i].EventType,
-				"AivenAudit_ProjectName", project.ProjectName,
-				"AivenAudit_ServiceName", events[i].ServiceName,
-				"AivenAudit_Time", events[i].Time,
+			auditLog.Info(events[i].EventDesc,
+				"actor", events[i].Actor,
+				"eventType", events[i].EventType,
+				"projectName", project.ProjectName,
+				"serviceName", events[i].ServiceName,
+				"time", events[i].Time,
 			)
 			as.lastAckedEvent[project.ProjectName] = events[i]
 			as.metrics.EventLogsSyncCounter.Inc()

@@ -12,6 +12,7 @@ import (
 	"log/slog"
 
 	"github.com/nais/aiven-audit/pkg/aivensync"
+
 	"github.com/nais/aiven-audit/pkg/config"
 	"github.com/nais/aiven-audit/pkg/metrics"
 	"github.com/nais/aiven-audit/pkg/nais"
@@ -21,12 +22,15 @@ const (
 	continuousSyncInterval = 10 * time.Second
 )
 
+var log = slog.Default().With("subsystem", "app")
+
 func main() {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stderr, nil)))
+	log = slog.Default().With("subsystem", "app")
 
 	err := run()
 	if err != nil {
-		slog.Error("fatal", "error", err)
+		log.Error("fatal", "error", err)
 		os.Exit(1)
 	}
 }
@@ -37,7 +41,7 @@ func run() error {
 	go func() {
 		interrupt := make(chan os.Signal, 1)
 		signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
-		slog.Info("Received signal, shutting down", "signal", <-interrupt)
+		log.Info("Received signal, shutting down", "signal", <-interrupt)
 		cancel()
 	}()
 
@@ -55,7 +59,7 @@ func run() error {
 }
 
 func syncEvents(ctx context.Context, aivenSync aivensync.AivenSync) {
-	slog.Info("Starting continuous event sync", "initialSyncIn", continuousSyncInterval)
+	log.Info("Starting continuous event sync", "initialSyncIn", continuousSyncInterval)
 
 	ticker := time.NewTicker(continuousSyncInterval)
 	for {
@@ -65,14 +69,14 @@ func syncEvents(ctx context.Context, aivenSync aivensync.AivenSync) {
 		case <-ticker.C:
 			err := aivenSync.Synchronize()
 			if err != nil {
-				slog.Error("Continuous sync", "error", err)
+				log.Error("Continuous sync", "error", err)
 			}
 		}
 	}
 }
 
 func httpd(ctx context.Context) error {
-	slog.Info("Starting HTTP server")
+	log.Info("Starting HTTP server")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(writer http.ResponseWriter, _ *http.Request) {
@@ -94,7 +98,7 @@ func httpd(ctx context.Context) error {
 
 		err := srv.Shutdown(ctx)
 		if err != nil {
-			slog.Error("Shutdown HTTP server", "error", err)
+			log.Error("Shutdown HTTP server", "error", err)
 		}
 	}()
 
@@ -103,7 +107,7 @@ func httpd(ctx context.Context) error {
 		return fmt.Errorf("Serve HTTP: %v", err)
 	}
 
-	slog.Info("HTTP server closed")
+	log.Info("HTTP server closed")
 
 	return nil
 }
